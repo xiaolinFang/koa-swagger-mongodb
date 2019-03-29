@@ -1,0 +1,50 @@
+import {
+  request,
+  summary,
+  body,
+  tags,
+  query,
+  middlewares,
+  path,
+  description
+} from '../../dist';
+import dbClient from '../middleware/db'
+
+const tag = tags(['AutoGenerate']);
+const collectionParams = {
+  collectionName: { type: 'string', require: true, description : 'Collection name' },
+  jsonStr: { type: 'string', require: true, description: 'Insert the first data of the collection type: json string'}
+}
+
+const logTime = () => async (ctx, next) => {
+  console.time('start');
+  await next();
+  console.timeEnd('start');
+};
+
+export default class AutoGenerate {
+  @request('POST', '/autoGenerate/add')
+  @summary('Automatically add collections and data, and automatically generate apis')
+  @description('example of api')
+  @tag
+  @middlewares([logTime()])
+  @query(collectionParams)
+  @body(collectionParams)
+  static async add (ctx){
+    let params = ctx.request.query
+    let postData = {}
+    try {
+      postData = JSON.parse(params.jsonStr)
+    } catch (e) {
+      console.log('Jsonstr is not a json string',e)
+      throw new Error('Jsonstr is not a json string')
+      return
+    }
+    let result = await dbClient.insert(params.collectionName, postData)
+    if(result.data.n > 0){
+       // 创建数据集合成功，根据模板写入路由API 文件信息
+      console.log(result, '/22')
+    }
+    ctx.body = result
+  }
+}

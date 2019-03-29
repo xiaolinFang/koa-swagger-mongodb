@@ -1,0 +1,86 @@
+import {
+  request,
+  summary,
+  body,
+  tags,
+  query,
+  middlewares,
+  path,
+  description
+} from '../../dist'
+import dbClient from '../middleware/db'
+import fs from 'fs'
+
+const tag = tags(['autoGenerate'])
+const collectionParams = {
+  collectionName: { type: 'string', require: true, description : 'Collection name', default: '' },
+  jsonStr: { type: 'object', require: true, description: 'Data set field names and display names such as key:value json string' }
+}
+
+const logTime = () => async (ctx, next) => {
+  console.time('start')
+  await next()
+  console.timeEnd('start')
+}
+
+export default class autoGenerate {
+  @request('POST', '/autoGenerate/add')
+  @summary('Automatically add collections and data, and automatically generate apis')
+  @description('example of api')
+  @tag
+  @middlewares([logTime()])
+  @body(collectionParams)
+  static async add (ctx,next){
+    let params = ctx.request.body
+    let postData = params.jsonStr
+    // console.log(postData, postData === {}, typeof postData, '/////')
+    if(Object.keys(postData).length == 0){
+      throw Error('jsonStr does not allow null')
+      return
+    }
+    let result = await dbClient.insert(params.collectionName, postData)
+    // console.log(result.data.result)
+
+    if(result.data.result.n > 0){
+
+      // 创建数据集合成功，根据模板写入路由API 文件信息
+
+      let newRouterFile = ''
+      let fileStr = ''
+      // 读取tempRouter
+      var fileReadStream = fs.createReadStream('src/public/js/tempRouter.js')
+
+
+      fileReadStream.on('data', (chunk) => {
+        // console.log(`${ ++count } 接收到：${chunk.length}`)
+        fileStr += chunk
+      })
+      fileReadStream.on('end', () => {
+
+        newRouterFile = fileStr.replace(/RouteName/gi,params.collectionName)
+
+        var writerStream = fs.createWriteStream(`src/routes/${params.collectionName}.js`)
+        fileReadStream.pipe(writerStream)
+        // 读取tempRouter 成功后，将路由模板写入新路由文件
+        writerStream.write(newRouterFile,'UTF8')
+        // 标记文件末尾
+        writerStream.end()
+        // 处理流事件 --> finish 事件
+
+        writerStream.on('finish', function() { /*finish - 所有数据已被写入到底层系统时触发。*/
+
+        })
+
+        writerStream.on('error', function(err){
+          console.log(err.stack)
+          throw Error('create new router fail')
+        })
+
+      })
+      fileReadStream.on('error', (error) => {
+       throw Error('read router template fail')
+      })
+    }
+    ctx.body = result
+  }
+}

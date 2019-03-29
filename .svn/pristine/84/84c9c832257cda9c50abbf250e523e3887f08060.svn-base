@@ -1,0 +1,86 @@
+import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../dist'
+import dbClient from '../middleware/db'
+
+const tag = tags(['User'])
+
+const queryConditions = {
+  jsonStr : { type: 'string', description: '查询条件（json字符串）'}
+}
+
+const logTime = () => async (ctx, next) => {
+  console.log(`start: ${new Date()}`)
+  await next()
+  console.log(`end: ${new Date()}`)
+}
+const getParamsData = () => async (ctx, next) =>{
+  return new Promise((resolve, reject)=>{
+    let params = ctx.request.query
+    let postData = {}
+    if(params.jsonStr !== undefined){
+      try {
+        postData = JSON.parse(params.jsonStr)
+        resolve(postData)
+      } catch (e) {
+        reject('Jsonstr is not a json string' + JSON.stringify(e))
+        return
+      }
+    }
+    next()
+  })
+}
+export default class UserRouter {
+  @request('POST', '/user/addUser')
+  @summary('add user')
+  @description('add a user')
+  @tag
+  @middlewares([logTime()])
+  @query(queryConditions)
+  static async register(ctx, next) {
+    let params = ctx.request.query
+    let postData = {}
+    if(params.jsonStr !== undefined){
+      try {
+        postData = JSON.parse(params.jsonStr)
+      } catch (e) {
+        throw new Error('Jsonstr is not a json string' + JSON.stringify(e))
+        return
+      }
+    }
+    console.log(postData, params, '////');
+    // let result = await dbClient.insert('users',postData)
+    ctx.body = postData
+  }
+
+  @request('get', '/user')
+  @summary('user list')
+  @query(queryConditions)
+  @tag
+  static async getAll(ctx) {
+    let params = ctx.request.query
+    let paramsData = {}
+    if(params.jsonStr !== undefined){
+      try {
+        paramsData = JSON.parse(params.jsonStr)
+      } catch (e) {
+        // console.log('Jsonstr is not a json string',e)
+        throw new Error('Jsonstr is not a json string')
+        return
+      }
+    }
+    if(paramsData['_id']){
+      paramsData._id = dbClient.getObjectId(paramsData['_id'])
+    }
+    let result = await dbClient.find('users', paramsData)
+    ctx.body = result
+  }
+
+  @request('DELETE', '/user/{id}')
+  @summary('delete user by objectId')
+  @tag
+  @path({ id: { type: 'string', required: true } })
+  static async deleteOne(ctx) {
+    const { id } = ctx.validatedParams
+    let result = await dbClient.remove('users',{'_id':dbClient.getObjectId(id) })
+    ctx.body = result
+  }
+}

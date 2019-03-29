@@ -1,0 +1,11 @@
+import Router from 'koa-router';
+
+import ApiRouter from './api';
+
+const router = new Router();
+
+router.use('/api', ApiRouter.routes());
+router.get('/',function (ctx) {
+  ctx.body= 'Quickly get started with the pro-cli'
+})
+export default router;
