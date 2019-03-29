@@ -37,4 +37,4 @@
 
 #赞助TA
 
-![](https://github.com/xiaolinFang/koa-swagger-mongodb/tree/master/src/public/images/sponsorship.png)
+ ![QR code](http://a1.qpic.cn/psb?/V12AeQuP1lGOC0/oy6pi0HV9CXWqpTJst4JG*3ZZTV05WnWIcZcdfF5IA4!/c/dAgBAAAAAAAA&ek=1&kp=1&pt=0&bo=kAEQAZABEAERADc!&tl=1&tm=1553839200&sce=0-12-12&rf=0-18)
