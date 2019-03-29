@@ -37,4 +37,4 @@
 
 #赞助TA
 
-![image](https://github.com/xiaolinFang/koa-swagger-mongodb/tree/master/src/public/images/sponsorship.png)
+![](https://github.com/xiaolinFang/koa-swagger-mongodb/tree/master/src/public/images/sponsorship.png)
