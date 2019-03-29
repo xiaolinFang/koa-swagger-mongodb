@@ -40,6 +40,10 @@ jspm_packages
 # MAC OS X
 .DS_Store
 
+*.svn
+*.vscode
+*.dist
+
 #.idea
 /.idea
 /temp
