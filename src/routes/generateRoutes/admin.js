@@ -35,27 +35,54 @@ export default class admin{
   @description('add a admin')
   @tag
   @middlewares([logTime()])
-  @body(bodyConditions)
+  // @body(bodyConditions)
   static async register(ctx, next) {
     let params = ctx.request.body
     let postData = {}
     let result = {}
-    if(params.jsonStr !== undefined){
-      try {
-        postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-        result = await dbClient.insert('admin',postData)
-      } catch (e) {
-        console.log(e);
-        throw Error('Jsonstr is not a json string')
-      }
-      ctx.body = result
-    }else{
+    // let searchForCheck = check('admin', { name: params.name })
+    let check = await dbClient.find('admin', { name: params.name })
+    console.log(check, '///');
+    if(check.data.length){
       ctx.body = {
         code: 500,
-        message: 'jsonStr undefined'
+        message: `管理员 ${params.name} 已存在`
       }
       return
     }
+     try {
+       result = await dbClient.insert('admin', params)
+     } catch (e) {
+       throw Error(e)
+     }
+     console.log(result);
+     ctx.body = result
+    // if(params.jsonStr !== undefined){
+    //   try {
+    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
+    //     result = await dbClient.insert('admin',postData)
+    //   } catch (e) {
+    //     console.log(e);
+    //     throw Error('Jsonstr is not a json string')
+    //   }
+    //   ctx.body = result
+    // }else{
+    //   ctx.body = {
+    //     code: 500,
+    //     message: 'jsonStr undefined'
+    //   }
+    //   return
+    // }
+  }
+
+  async check(collectionName, json){
+    let haveData = false
+    let result = await dbClient.find(collectionName, json)
+    if(result.data.length){
+      haveData = true
+    }
+    console.log(haveData);
+    return haveData
   }
   // 删
   @request('DELETE', '/admin/delete')
