@@ -40,9 +40,7 @@ export default class admin{
     let params = ctx.request.body
     let postData = {}
     let result = {}
-    // let searchForCheck = check('admin', { name: params.name })
     let check = await dbClient.find('admin', { name: params.name })
-    console.log(check, '///');
     if(check.data.length){
       ctx.body = {
         code: 500,
@@ -74,43 +72,34 @@ export default class admin{
     //   return
     // }
   }
-
-  async check(collectionName, json){
-    let haveData = false
-    let result = await dbClient.find(collectionName, json)
-    if(result.data.length){
-      haveData = true
-    }
-    console.log(haveData);
-    return haveData
-  }
   // 删
   @request('DELETE', '/admin/delete')
-  @summary('delete admin by condition')
+  @summary('delete admin by ObjectId')
   @tag
-  @body(bodyConditions)
+  @body({})
   // @path({ id: { type: 'string', required: true } })
   static async deleteMany(ctx) {
     let params = ctx.request.body
     let paramsData = {}
-    if(params.jsonStr !== undefined){
+    if(params._id){
       try {
-        paramsData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-        if(paramsData['_id']){
-          paramsData._id = dbClient.getObjectId(paramsData['_id'])
-        }
+        // paramsData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
+        // if(paramsData['_id']){
+        //   paramsData._id = dbClient.getObjectId(paramsData['_id'])
+        // }
+        paramsData._id = dbClient.getObjectId(params['_id'])
         let result = await dbClient.remove('admin',paramsData)
         ctx.body = result
 
       } catch (e) {
         // console.log('Jsonstr is not a json string',e)
-        throw Error('Jsonstr is not a json string')
+        throw Error(e)
         return
       }
     }else {
       ctx.body = {
-        code: 500,
-        message: 'Jsonstr is undefined'
+        code: 400,
+        message: '_id is undefined'
       }
     }
   }

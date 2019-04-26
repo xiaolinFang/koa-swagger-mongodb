@@ -77,7 +77,6 @@ class Db{
     return new Promise((resolve,reject)=>{
 
       this.connect().then((db)=>{
-
         db.collection(collectionName).updateMany(json1,{
           $set:json2
         },(err,result)=>{

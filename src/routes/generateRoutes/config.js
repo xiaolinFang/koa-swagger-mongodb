@@ -1,7 +1,7 @@
 import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../../dist'
 import dbClient from '../../middleware/db'
 // .toUpperCase()
-const tag = tags(['RouteName'.toLowerCase().replace('RouteName'.charAt(0),'RouteName'.charAt(0).toUpperCase())])
+const tag = tags(['config'.toLowerCase().replace('config'.charAt(0),'config'.charAt(0).toUpperCase())])
 
 const bodyConditions = {
   // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
@@ -10,7 +10,7 @@ const bodyConditions = {
 }
 const upDateJson = {
   condition: { type: 'object', require: 'true', description: 'Update the conditional json string'},
-  json: {  type: 'object', require: 'true', description: 'Update the data json string'}
+  jsonStr: {  type: 'object', require: 'true', description: 'Update the data json string'}
 }
 const queryConditions = {
   jsonStr : { type: 'string', description: 'a jsons data string or condition'},
@@ -24,11 +24,11 @@ const logTime = () => async (ctx, next) => {
   await next()
   console.timeEnd('start')
 }
-export default class RouteName{
+export default class config{
   // 增
-  @request('POST', '/RouteName/add')
-  @summary('add RouteName')
-  @description('add a RouteName')
+  @request('POST', '/config/add')
+  @summary('add config')
+  @description('add a config')
   @tag
   @middlewares([logTime()])
   @body(bodyConditions)
@@ -39,7 +39,7 @@ export default class RouteName{
     if(params.jsonStr !== undefined){
       try {
         postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-        result = await dbClient.insert('RouteName',postData)
+        result = await dbClient.insert('config',postData)
       } catch (e) {
         console.log(e);
         throw Error('Jsonstr is not a json string')
@@ -54,8 +54,8 @@ export default class RouteName{
     }
   }
   // 删
-  @request('DELETE', '/RouteName/delete')
-  @summary('delete RouteName by condition')
+  @request('DELETE', '/config/delete')
+  @summary('delete config by condition')
   @tag
   @body(bodyConditions)
   // @path({ id: { type: 'string', required: true } })
@@ -68,7 +68,7 @@ export default class RouteName{
         if(paramsData['_id']){
           paramsData._id = dbClient.getObjectId(paramsData['_id'])
         }
-        let result = await dbClient.remove('RouteName',paramsData)
+        let result = await dbClient.remove('config',paramsData)
         ctx.body = result
 
       } catch (e) {
@@ -84,9 +84,9 @@ export default class RouteName{
     }
   }
 // 改
-  @request('Put', '/RouteName/update')
-  @summary('update RouteName')
-  @description('update a RouteName')
+  @request('Put', '/config/update')
+  @summary('update config')
+  @description('update a config')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
@@ -95,36 +95,29 @@ export default class RouteName{
     let condition = {}
     let postData = {}
     let result = {}
-    // if(params.condition !== undefined && params.jsonStr !== undefined){
-    //   try {
-    //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
-    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('RouteName',condition,postData)
-    //   } catch (e) {
-    //     console.log(e);
-    //     throw Error('Jsonstr is not a json string')
-    //   }
-    //   ctx.body = result
-    // }
+    // debugger
+
     if(params.json !== undefined && params.condition !== undefined){
        try{
          delete params.json['_id']
          condition._id = dbClient.getObjectId(params.condition._id)
          result = await dbClient.update('config',condition, params.json)
        }catch (e) {
-        // console.log(e);
-        throw Error('jsonStr is not a json string ')
-      }else{
+        result = {
+          message: e.errmsg
+        }
+      }
+      ctx.body = result
+    }else{
       ctx.body = {
         code: 500,
-        message: params.condition ? 'jsonStr undefined' : (params.json ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
+        message: params.json ? 'error' :'json is undefined'
       }
-      return
     }
   }
 // 查
-  @request('get', '/RouteName/find')
-  @summary('RouteName list / query by condition')
+  @request('get', '/config/find')
+  @summary('config list / query by condition')
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
@@ -145,7 +138,7 @@ export default class RouteName{
     if(paramsData['_id']){
       paramsData._id = dbClient.getObjectId(paramsData['_id'])
     }
-    let result = params['page'] && params['pageSize'] ? await dbClient.find('RouteName', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('RouteName', paramsData, filterConditions)
+    let result = params['page'] && params['pageSize'] ? await dbClient.find('config', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('config', paramsData, filterConditions)
     ctx.body = result
   }
 }
