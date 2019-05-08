@@ -1,7 +1,7 @@
-import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../../dist'
-import dbClient from '../../middleware/db'
+import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../../../dist'
+import dbClient from '../../../middleware/db'
 // .toUpperCase()
-const tag = tags(['navs'.toLowerCase().replace('navs'.charAt(0),'navs'.charAt(0).toUpperCase())])
+const tag = tags(['category'.toLowerCase().replace('category'.charAt(0),'category'.charAt(0).toUpperCase())])
 
 const bodyConditions = {
   // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
@@ -10,7 +10,7 @@ const bodyConditions = {
 }
 const upDateJson = {
   condition: { type: 'object', require: 'true', description: 'Update the conditional json string'},
-  jsonStr: {  type: 'object', require: 'true', description: 'Update the data json string'}
+  json: {  type: 'object', require: 'true', description: 'Update the data json string'}
 }
 const queryConditions = {
   jsonStr : { type: 'string', description: 'a jsons data string or condition'},
@@ -24,11 +24,11 @@ const logTime = () => async (ctx, next) => {
   await next()
   console.timeEnd('start')
 }
-export default class navs{
+export default class category{
   // 增
-  @request('POST', '/navs/add')
-  @summary('add navs')
-  @description('add a navs')
+  @request('POST', '/category/add')
+  @summary('add category')
+  @description('add a category')
   @tag
   @middlewares([logTime()])
   @body(bodyConditions)
@@ -39,7 +39,7 @@ export default class navs{
     if(params.jsonStr !== undefined){
       try {
         postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-        result = await dbClient.insert('navs',postData)
+        result = await dbClient.insert('category',postData)
       } catch (e) {
         console.log(e);
         throw Error('Jsonstr is not a json string')
@@ -54,8 +54,8 @@ export default class navs{
     }
   }
   // 删
-  @request('DELETE', '/navs/delete')
-  @summary('delete navs by condition')
+  @request('DELETE', '/category/delete')
+  @summary('delete category by condition')
   @tag
   @body(bodyConditions)
   // @path({ id: { type: 'string', required: true } })
@@ -68,7 +68,7 @@ export default class navs{
         if(paramsData['_id']){
           paramsData._id = dbClient.getObjectId(paramsData['_id'])
         }
-        let result = await dbClient.remove('navs',paramsData)
+        let result = await dbClient.remove('category',paramsData)
         ctx.body = result
 
       } catch (e) {
@@ -84,9 +84,9 @@ export default class navs{
     }
   }
 // 改
-  @request('Put', '/navs/update')
-  @summary('update navs')
-  @description('update a navs')
+  @request('Put', '/category/update')
+  @summary('update category')
+  @description('update a category')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
@@ -95,38 +95,43 @@ export default class navs{
     let condition = {}
     let postData = {}
     let result = {}
-    if(params.condition !== undefined && params.jsonStr !== undefined){
-      try {
-        condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
-        postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-        result = await dbClient.update('navs',condition,postData)
-      } catch (e) {
-        console.log(e);
-        throw Error('Jsonstr is not a json string')
+    // if(params.condition !== undefined && params.jsonStr !== undefined){
+    //   try {
+    //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
+    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
+    //     result = await dbClient.update('category',condition,postData)
+    //   } catch (e) {
+    //     console.log(e);
+    //     throw Error('Jsonstr is not a json string')
+    //   }
+    //   ctx.body = result
+    // }
+    if(params.json !== undefined && params.condition !== undefined){
+       try{
+         delete params.json['_id']
+         condition._id = dbClient.getObjectId(params.condition._id)
+         result = await dbClient.update('config',condition, params.json)
+       }catch (e) {
+        // console.log(e);
+        throw Error('jsonStr is not a json string ')
       }
-      ctx.body = result
     }else{
-      ctx.body = {
-        code: 500,
-        message: params.condition ? 'jsonStr undefined' : (params.jsonStr ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
-      }
-      return
+    ctx.body = {
+      code: 500,
+      message: params.condition ? 'jsonStr undefined' : (params.json ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
     }
+    return
+  }
   }
 // 查
-  @request('get', '/navs/find')
-  @summary('navs list / query by condition')
+  @request('get', '/category/find')
+  @summary('category list / query by condition')
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
     let params = ctx.request.query
     let filterConditions = {}
     let paramsData = {}
-    if(params.power){
-      // TODO: 查询菜单时，传入power 根据值 查询对应菜单包含当前power值的菜单列表
-
-      // console.log(params.power, typeof params.power, '////');
-    }
     if(params['jsonStr'] && params['jsonStr'] !== undefined){
       try {
         paramsData = JSON.parse(params.jsonStr)
@@ -141,7 +146,7 @@ export default class navs{
     if(paramsData['_id']){
       paramsData._id = dbClient.getObjectId(paramsData['_id'])
     }
-    let result = params['page'] && params['pageSize'] ? await dbClient.find('navs', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('navs', paramsData, filterConditions)
+    let result = params['page'] && params['pageSize'] ? await dbClient.find('category', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('category', paramsData, filterConditions)
     ctx.body = result
   }
 }

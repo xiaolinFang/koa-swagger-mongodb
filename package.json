@@ -8,6 +8,7 @@
     "@types/koa": "^2.0.46",
     "@types/koa-router": "^7.0.30",
     "@types/ramda": "^0.25.34",
+    "cheerio": "^1.0.0-rc.3",
     "fs": "^0.0.1-security",
     "globby": "^8.0.1",
     "is-type-of": "^1.2.0",
@@ -19,7 +20,9 @@
     "path": "^0.12.7",
     "ramda": "^0.25.0",
     "request": "^2.88.0",
-    "start": "^5.1.0"
+    "start": "^5.1.0",
+    "superagent": "^5.0.5",
+    "superagent-charset": "^1.2.0"
   },
   "nyc": {
     "include": [
@@ -94,6 +97,6 @@
     "koa-router"
   ],
   "author": "xiaolin.fang",
- "license": "MIT",
- "repository": "https://github.com/xiaolinFang/koa-swagger-mongodb"
+  "license": "MIT",
+  "repository": "https://github.com/xiaolinFang/koa-swagger-mongodb"
 }
