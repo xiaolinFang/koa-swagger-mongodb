@@ -10,7 +10,7 @@ let allData = []
  * format html
  * @type {Object}
  */
-const forMatByCheerio = (url) => {
+const getPageData = (url) => {
   let domain = 'http://www.go2.cn'
   let $ = null
   return new Promise((resolve)=>{
@@ -66,8 +66,7 @@ const forMatByCheerio = (url) => {
           if(currPage <= pages){
             pageUrl = pageUrl.slice(0,pageUrl.indexOf('page'))
             let newUrl = domain + pageUrl + 'page' + currPage + '.html'
-            let pageData = await forMatByCheerio(newUrl)
-
+            let pageData = await getPageData(newUrl)
             allData.concat(pageData)
           }else{
             currPage = 1
@@ -98,7 +97,7 @@ export default class spider{
     if(!url || !charSet){
       result.message = 'Error taking parameter, please check! All parameters are required'
     }else{
-     result.data = await forMatByCheerio(url)
+     result.data = await getPageData(url)
      result.message = 'success'
      result.code = 200
      console.log(result.data.length, '///get all data length');
