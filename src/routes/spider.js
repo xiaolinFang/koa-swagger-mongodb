@@ -96,6 +96,7 @@ export default class spider{
     let result = {}
     if(!url || !charSet){
       result.message = 'Error taking parameter, please check! All parameters are required'
+      result.code = 400
     }else{
      result.data = await getPageData(url)
      result.message = 'success'
