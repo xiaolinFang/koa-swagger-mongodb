@@ -11,7 +11,6 @@ let allData = []
  * @type {Object}
  */
 const forMatByCheerio = (url) => {
-  let item = []
   let domain = 'http://www.go2.cn'
   let $ = null
   return new Promise((resolve)=>{
@@ -23,8 +22,6 @@ const forMatByCheerio = (url) => {
           console.log('正在抓取页面：','第',currPage ,'页: url= ', url);
           //下面类似于jquery的操作，前端的小伙伴们肯定很熟悉啦
           $('.search-result-list ul li').each((index, element) => {
-            // let imgInfo = $(element).find('.product-img-box')
-            // let normalInfo = $(element).find('.product-normal-info')
             let itemUrl = domain + $(element).find('.product-img-box a').attr('href')
             let imgUrl = $(element).find('.product-img-box img').attr('src')
             let price =  $(element).find('.product-normal-info .price').text()
@@ -35,10 +32,11 @@ const forMatByCheerio = (url) => {
             // 商品属性
             $(element).find('.product-hover-info .item').each((index, item)=>{
               if(index !== 2 && index !== 4 && index !== 5){
-                itemInfo.push(formatString($(item).text()))
+                let proptype = index === 3 ? $(item).text() : formatString($(item).text())
+                itemInfo.push(proptype)
               }
             })
-            // 商家联系方式
+            // 商家信息
             let merchant_name = $(element).find('.product-hover-info .merchant-info .item .merchant-name').text()
             let merchant_phone = $(element).find('.product-hover-info .merchant-info .item .merchant-phone').text()
             let merchant_address = $(element).find('.product-hover-info .merchant-info .merchant-address').attr('title')
@@ -72,8 +70,9 @@ const forMatByCheerio = (url) => {
             allData.concat(pageData)
           }else{
             currPage = 1
+            console.log('抓取完成');
           }
-          console.log('抓取完成');
+
           resolve(allData)
       })
   })
