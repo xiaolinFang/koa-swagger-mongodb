@@ -29,6 +29,7 @@ const forMatByCheerio = (url) => {
             let num = $(element).find('.product-normal-info .product-number').text()
             let allowExpress = $(element).find('.product-hover-info .allow-express').text()
             let itemInfo = []
+            itemInfo.push(allowExpress)
             // 商品属性
             $(element).find('.product-hover-info .item').each((index, item)=>{
               if(index !== 2 && index !== 4 && index !== 5){
