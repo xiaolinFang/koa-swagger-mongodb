@@ -1,6 +1,6 @@
 var app={
 
     dbUrl: 'mongodb://localhost:27017/',
-    dbName: 'tourism'
+    dbName: 'shoes'
 }
 module.exports=app;

@@ -114,7 +114,8 @@ export default class RouteName{
        }catch (e) {
         // console.log(e);
         throw Error('jsonStr is not a json string ')
-      }else{
+      }
+    }else{
       ctx.body = {
         code: 500,
         message: params.condition ? 'jsonStr undefined' : (params.json ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')

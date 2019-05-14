@@ -105,6 +105,40 @@ class Db{
       })
     })
   }
+  insertOneForSpilder(collectionName,json){
+    let self = this
+    return new  Promise((resolve,reject)=>{
+      self.connect().then((db)=>{
+
+        db.collection(collectionName).insertOne(json,function(err,result){
+          if(err){
+            reject('添加失败！')
+            // console.log('err',err);
+            // reject(self.foramtResult(err, 'error'))
+          }else{
+            resolve('添加成功！')
+            // console.log('success',result);
+            // resolve(self.foramtResult(result,'success'))
+          }
+        })
+      })
+    })
+  }
+  insertMany(collectionName,json){
+    let self = this
+    return new  Promise((resolve,reject)=>{
+      self.connect().then((db)=>{
+
+        db.collection(collectionName).insertMany(json,function(err,result){
+          if(err){
+            reject(self.foramtResult(err, 'error'))
+          }else{
+            resolve(self.foramtResult(result,'success'))
+          }
+        })
+      })
+    })
+  }
 
   remove(collectionName,json){
   let self = this

@@ -1,7 +1,7 @@
-import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../../../dist'
-import dbClient from '../../../middleware/db'
+import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../../dist'
+import dbClient from '../../middleware/db'
 // .toUpperCase()
-const tag = tags(['case_details'.toLowerCase().replace('case_details'.charAt(0),'case_details'.charAt(0).toUpperCase())])
+const tag = tags(['product_detail'.toLowerCase().replace('product_detail'.charAt(0),'product_detail'.charAt(0).toUpperCase())])
 
 const bodyConditions = {
   // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
@@ -24,55 +24,38 @@ const logTime = () => async (ctx, next) => {
   await next()
   console.timeEnd('start')
 }
-export default class case_details{
+export default class product_detail{
   // 增
-  @request('POST', '/case_details/add')
-  @summary('add case_details')
-  @description('add a case_details')
+  @request('POST', '/product_detail/add')
+  @summary('add product_detail')
+  @description('add a product_detail')
   @tag
   @middlewares([logTime()])
-  // @body(bodyConditions)
+  @body(bodyConditions)
   static async register(ctx, next) {
     let params = ctx.request.body
-    // let postData = {}
-    console.log(params, '///get data');
+    let postData = {}
     let result = {}
-    if(params !== {}){
-      if(params['jsonStr']){
-        delete params.jsonStr
+    if(params.jsonStr !== undefined){
+      try {
+        postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
+        result = await dbClient.insert('product_detail',postData)
+      } catch (e) {
+        console.log(e);
+        throw Error('Jsonstr is not a json string')
       }
-      result = await dbClient.insert('case_list',params)
       ctx.body = result
     }else{
       ctx.body = {
         code: 500,
         message: 'jsonStr undefined'
       }
+      return
     }
-
-    // let params = ctx.request.body
-    // let postData = {}
-    // let result = {}
-    // if(params.jsonStr !== undefined){
-    //   try {
-    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.insert('case_details',postData)
-    //   } catch (e) {
-    //     console.log(e);
-    //     throw Error('Jsonstr is not a json string')
-    //   }
-    //   ctx.body = result
-    // }else{
-    //   ctx.body = {
-    //     code: 500,
-    //     message: 'jsonStr undefined'
-    //   }
-    //   return
-    // }
   }
   // 删
-  @request('DELETE', '/case_details/delete')
-  @summary('delete case_details by condition')
+  @request('DELETE', '/product_detail/delete')
+  @summary('delete product_detail by condition')
   @tag
   @body(bodyConditions)
   // @path({ id: { type: 'string', required: true } })
@@ -85,7 +68,7 @@ export default class case_details{
         if(paramsData['_id']){
           paramsData._id = dbClient.getObjectId(paramsData['_id'])
         }
-        let result = await dbClient.remove('case_details',paramsData)
+        let result = await dbClient.remove('product_detail',paramsData)
         ctx.body = result
 
       } catch (e) {
@@ -101,9 +84,9 @@ export default class case_details{
     }
   }
 // 改
-  @request('Put', '/case_details/update')
-  @summary('update case_details')
-  @description('update a case_details')
+  @request('Put', '/product_detail/update')
+  @summary('update product_detail')
+  @description('update a product_detail')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
@@ -116,7 +99,7 @@ export default class case_details{
     //   try {
     //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
     //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('case_details',condition,postData)
+    //     result = await dbClient.update('product_detail',condition,postData)
     //   } catch (e) {
     //     console.log(e);
     //     throw Error('Jsonstr is not a json string')
@@ -133,32 +116,16 @@ export default class case_details{
         throw Error('jsonStr is not a json string ')
       }
     }else{
-    ctx.body = {
-      code: 500,
-      message: params.condition ? 'jsonStr undefined' : (params.json ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
-    }
-    return
-  }
-  }
-  @request('get','/case_details/findOne')
-  @summary('find a case\'s detail info')
-  @query({id:{ type: 'string', required: true, description: 'case id'}})
-  @tag
-  static async getOne(ctx){
-    let params = ctx.request.query
-    if(!params.id){
       ctx.body = {
-        code: 400,
-        message: 'params id is required'
+        code: 500,
+        message: params.condition ? 'jsonStr undefined' : (params.json ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
       }
       return
     }
-    let result = await dbClient.find('case_details', params)
-    ctx.body = result
   }
 // 查
-  @request('get', '/case_details/find')
-  @summary('case_details list / query by condition')
+  @request('get', '/product_detail/find')
+  @summary('product_detail list / query by condition')
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
@@ -179,17 +146,7 @@ export default class case_details{
     if(paramsData['_id']){
       paramsData._id = dbClient.getObjectId(paramsData['_id'])
     }
-    let result = params['page'] && params['pageSize'] ? await dbClient.find('case_details', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('case_details', paramsData, filterConditions)
-    // update caseDetail's id
-    // let items = result.data
-    // for(let i = 0; i < items.length; i++){
-    //   let json1 = { _id: dbClient.getObjectId(items[i]._id) }
-    //   let json2 = {id: items[i].case_details.id}
-    //   console.log(json1, json2, i);
-    //   let up = await dbClient.update("case_details", json1, json2)
-    //
-    //   // ctx.body = up
-    // }
+    let result = params['page'] && params['pageSize'] ? await dbClient.find('product_detail', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('product_detail', paramsData, filterConditions)
     ctx.body = result
   }
 }

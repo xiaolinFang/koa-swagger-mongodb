@@ -1,7 +1,7 @@
-import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../../../dist'
-import dbClient from '../../../middleware/db'
+import {  request,  summary,  body,  tags,  middlewares,  path,  description, query } from '../../../dist'
+import dbClient from '../../middleware/db'
 // .toUpperCase()
-const tag = tags(['category'.toLowerCase().replace('category'.charAt(0),'category'.charAt(0).toUpperCase())])
+const tag = tags(['product_list'.toLowerCase().replace('product_list'.charAt(0),'product_list'.charAt(0).toUpperCase())])
 
 const bodyConditions = {
   // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
@@ -24,11 +24,11 @@ const logTime = () => async (ctx, next) => {
   await next()
   console.timeEnd('start')
 }
-export default class category{
+export default class product_list{
   // 增
-  @request('POST', '/category/add')
-  @summary('add category')
-  @description('add a category')
+  @request('POST', '/product_list/add')
+  @summary('add product_list')
+  @description('add a product_list')
   @tag
   @middlewares([logTime()])
   @body(bodyConditions)
@@ -39,7 +39,7 @@ export default class category{
     if(params.jsonStr !== undefined){
       try {
         postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-        result = await dbClient.insert('category',postData)
+        result = await dbClient.insert('product_list',postData)
       } catch (e) {
         console.log(e);
         throw Error('Jsonstr is not a json string')
@@ -54,8 +54,8 @@ export default class category{
     }
   }
   // 删
-  @request('DELETE', '/category/delete')
-  @summary('delete category by condition')
+  @request('DELETE', '/product_list/delete')
+  @summary('delete product_list by condition')
   @tag
   @body(bodyConditions)
   // @path({ id: { type: 'string', required: true } })
@@ -68,7 +68,7 @@ export default class category{
         if(paramsData['_id']){
           paramsData._id = dbClient.getObjectId(paramsData['_id'])
         }
-        let result = await dbClient.remove('category',paramsData)
+        let result = await dbClient.remove('product_list',paramsData)
         ctx.body = result
 
       } catch (e) {
@@ -84,9 +84,9 @@ export default class category{
     }
   }
 // 改
-  @request('Put', '/category/update')
-  @summary('update category')
-  @description('update a category')
+  @request('Put', '/product_list/update')
+  @summary('update product_list')
+  @description('update a product_list')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
@@ -99,7 +99,7 @@ export default class category{
     //   try {
     //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
     //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('category',condition,postData)
+    //     result = await dbClient.update('product_list',condition,postData)
     //   } catch (e) {
     //     console.log(e);
     //     throw Error('Jsonstr is not a json string')
@@ -116,16 +116,16 @@ export default class category{
         throw Error('jsonStr is not a json string ')
       }
     }else{
-    ctx.body = {
-      code: 500,
-      message: params.condition ? 'jsonStr undefined' : (params.json ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
+      ctx.body = {
+        code: 500,
+        message: params.condition ? 'jsonStr undefined' : (params.json ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
+      }
+      return
     }
-    return
-  }
-  }
+}
 // 查
-  @request('get', '/category/find')
-  @summary('category list / query by condition')
+  @request('get', '/product_list/find')
+  @summary('product_list list / query by condition')
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
@@ -146,7 +146,7 @@ export default class category{
     if(paramsData['_id']){
       paramsData._id = dbClient.getObjectId(paramsData['_id'])
     }
-    let result = params['page'] && params['pageSize'] ? await dbClient.find('category', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('category', paramsData, filterConditions)
+    let result = params['page'] && params['pageSize'] ? await dbClient.find('product_list', paramsData, filterConditions,  params.page, params.pageSize) : await dbClient.find('product_list', paramsData, filterConditions)
     ctx.body = result
   }
 }
