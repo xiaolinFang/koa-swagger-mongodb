@@ -4,7 +4,6 @@ import {
   body,
   tags,
   middlewares,
-  path,
   description,
   query
 } from '../../../dist';
@@ -64,7 +63,7 @@ export default class config {
   @tag
   @middlewares([logTime()])
   @body(bodyConditions)
-  static async register(ctx, next) {
+  static async register(ctx) {
     const params = ctx.request.body;
     let postData = {};
     let result = {};
