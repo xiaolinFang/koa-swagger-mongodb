@@ -12,6 +12,7 @@
     "import/namespace": 0,
     "import/no-named-as-default": 2,
     "comma-dangle": 0,
+    "linebreak-style": [0, "error", "windows"],
     "indent": [
       2,
       2,

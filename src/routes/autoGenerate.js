@@ -7,23 +7,32 @@ import {
   middlewares,
   path,
   description
-} from '../../dist'
-import dbClient from '../middleware/db'
-import fsReadWrite from '../public/js/createRouter'
+} from '../../dist';
+import dbClient from '../middleware/db';
+import fsReadWrite from '../public/js/createRouter';
 
-const tag = tags(['autoGenerate'])
+const tag = tags(['autoGenerate']);
 const collectionParams = {
-  name: { type: 'string', require: true, description : 'Collection name', default: '' },
-}
+  name: {
+    type: 'string',
+    require: true,
+    description: 'Collection name',
+    default: ''
+  },
+};
 const CollectName = {
-  name: { type: 'string', require: true, description: 'collection name' }
-}
+  name: {
+    type: 'string',
+    require: true,
+    description: 'collection name'
+  }
+};
 
 const logTime = () => async (ctx, next) => {
-  console.time('start')
-  await next()
-  console.timeEnd('start')
-}
+  console.time('start');
+  await next();
+  console.timeEnd('start');
+};
 
 export default class autoGenerate {
   @request('POST', '/autoGenerate/add')
@@ -32,13 +41,13 @@ export default class autoGenerate {
   @tag
   @middlewares([logTime()])
   @body(collectionParams)
-  static async add (ctx,next){
-    let params = ctx.request.body
-    let result = {}
+  static async add(ctx, next) {
+    const params = ctx.request.body;
+    let result = {};
 
-    let collectionObj = {
+    const collectionObj = {
       name: params.name
-    }
+    };
     // let checkCollectionByName = await dbClient.find('collectConfig',{ name: params.name })
 
     // if(checkCollectionByName.data.length){
@@ -50,17 +59,17 @@ export default class autoGenerate {
     //   return
     // }
 
-    let wirteSuccess = await fsReadWrite.createRouter(params.name)
+    const wirteSuccess = await fsReadWrite.createRouter(params.name);
 
-    if(wirteSuccess){
+    if (wirteSuccess) {
       // 原 记录所有api router
       // result = await dbClient.insert('collectConfig',collectionObj)
       result = {
         code: 200,
         message: 'create Router success'
-      }
+      };
     }
-    ctx.body = result
+    ctx.body = result;
 
   }
 
@@ -71,21 +80,25 @@ export default class autoGenerate {
   @tag
   @middlewares([logTime()])
   @body(CollectName)
-  static async deleteCollection(ctx){
+  static async deleteCollection(ctx) {
 
-    let params = ctx.request.body
-    let result = {}
+    const params = ctx.request.body;
+    let result = {};
 
-    let checkCollectionByName = await dbClient.find('collectConfig',{ name: params.name })
+    const checkCollectionByName = await dbClient.find('collectConfig', {
+      name: params.name
+    });
 
-    if(!checkCollectionByName.data.length){
-      throw Error(`The collection '${params.name}' does not exist`)
-      return
+    if (!checkCollectionByName.data.length) {
+      throw Error(`The collection '${params.name}' does not exist`);
+
     }
-    result = await dbClient.remove('collectConfig', {name: params.name })
+    result = await dbClient.remove('collectConfig', {
+      name: params.name
+    });
     // 删除router文件
-    fsReadWrite.removeFile(`src/routes/generateRoutes/${params.name}.js`)
+    fsReadWrite.removeFile(`src/routes/generateRoutes/${params.name}.js`);
 
-     ctx.body = result
+    ctx.body = result;
   }
 }
