@@ -29,10 +29,11 @@ export default class Help {
     @description('help apis')
     @tag
   static async uploads(ctx) {
+    // TODO  根据传入的二级目录创建文件夹并存放文件
     const form = formidable.parse(ctx.request);
     form.encoding = 'utf-8';
     form.keepExtensions = true; // 保留后缀
-    mkdirs('public/upload');
+    mkdirs('public/uploads');
     const upload = new Promise((resolve) => {
       form((opt, {
         files
@@ -46,7 +47,7 @@ export default class Help {
         const readStream = fs.createReadStream(files.file.path);
         const writeStream = fs.createWriteStream(uploadDir + avatarName);
         readStream.pipe(writeStream);
-        resolve(`/ip/uploads/${avatarName}`);
+        resolve(`/uploads/${avatarName}`);
         // /public/upload/1513523744257_WX20171205-150757.png
       });
     });
