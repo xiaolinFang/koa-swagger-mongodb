@@ -1,0 +1,8 @@
+
+	备份数据库：
+
+	mongodump -h dbhost -d dbname -o dbdirectory
+
+	还原数据库：
+
+	 mongorestore -h dbhost -d dbname --dir dbdirectory
