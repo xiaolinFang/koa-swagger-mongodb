@@ -1,16 +1,8 @@
 import formidable from 'koa-formidable';
 import fs from 'fs';
 import path from 'path';
-import {
-  base64encode
-}
-  from 'nodejs-base64';
-import {
-  request,
-  summary,
-  tags,
-  description
-} from '../../dist';
+import { base64encode } from 'nodejs-base64';
+import { request, summary, tags, description } from '../../dist';
 
 const tag = tags(['Help']);
 const mkdirs = (dirname) => {
@@ -24,10 +16,10 @@ const mkdirs = (dirname) => {
   });
 };
 export default class Help {
-    @request('post', '/uploads')
-    @summary('Download and save files')
-    @description('help apis')
-    @tag
+  @request('post', '/uploads')
+  @summary('upload and save files')
+  @description('help apis')
+  @tag
   static async uploads(ctx) {
     // TODO  根据传入的二级目录创建文件夹并存放文件
     const form = formidable.parse(ctx.request);
@@ -35,15 +27,14 @@ export default class Help {
     form.keepExtensions = true; // 保留后缀
     mkdirs('public/uploads');
     const upload = new Promise((resolve) => {
-      form((opt, {
-        files
-      }) => {
+      form((opt, { files }) => {
         const filename = files.file.name;
         const uploadDir = 'public/uploads/';
         const prename = filename.slice(0, filename.indexOf('.'));
         const lastname = filename.slice(filename.indexOf('.'), filename.length);
         const avatarName = `${Date.now()}_${base64encode(prename)}${lastname}`;
 
+        if (lastname.indexOf('exe') !== -1) return;
         const readStream = fs.createReadStream(files.file.path);
         const writeStream = fs.createWriteStream(uploadDir + avatarName);
         readStream.pipe(writeStream);
