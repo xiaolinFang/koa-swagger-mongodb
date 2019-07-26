@@ -24,19 +24,20 @@ const tag = tags(['Spider']);
  * request url
  * @type {Object}
  */
-const getPageData = (url, callback) => new Promise((resolve) => {
-  superagent
-    .get(url)
-  // .charset(charSet) //当前页面编码格式
-    .end(async (err, sres) => {
-      // 页面获取到的数据
-      const html = sres.text;
-      $ = cheerio.load(html, { decodeEntities: false });
-      console.log('正在抓取页面：', '第', currPage, '页: url= ', url);
-      allData = await callback();
-      resolve(allData);
-    });
-});
+const getPageData = (url, callback) =>
+  new Promise((resolve) => {
+    superagent
+      .get(url)
+      // .charset(charSet) //当前页面编码格式
+      .end(async (err, sres) => {
+        // 页面获取到的数据
+        const html = sres.text;
+        $ = cheerio.load(html, { decodeEntities: false });
+        console.log('正在抓取页面：', '第', currPage, '页: url= ', url);
+        allData = await callback();
+        resolve(allData);
+      });
+  });
 /**
  * 格式化go2.cn 数据格式化
  * @type {[type]}

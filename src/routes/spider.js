@@ -33,19 +33,20 @@ const logTime = () => async (ctx, next) => {
  * request url
  * @type {Object}
  */
-const getPageData = (url, callback) => new Promise((resolve) => {
-  superagent
-    .get(url)
-  // .charset(charSet) //当前页面编码格式
-    .end(async (err, sres) => {
-      // 页面获取到的数据
-      const html = sres.text;
-      $ = cheerio.load(html, { decodeEntities: false });
-      // console.log('正在抓取页面：','第',currPage ,'页: url= ', url);
-      allData = await callback();
-      resolve(allData);
-    });
-});
+const getPageData = (url, callback) =>
+  new Promise((resolve) => {
+    superagent
+      .get(url)
+      // .charset(charSet) //当前页面编码格式
+      .end(async (err, sres) => {
+        // 页面获取到的数据
+        const html = sres.text;
+        $ = cheerio.load(html, { decodeEntities: false });
+        // console.log('正在抓取页面：','第',currPage ,'页: url= ', url);
+        allData = await callback();
+        resolve(allData);
+      });
+  });
 
 /**
  * 格式化go2.cn 数据格式化
@@ -143,73 +144,74 @@ const formatGo2Data = async () => {
  * @param  {[type]} str [description]
  * @return {[type]}     [description]
  */
-const formatDetailInfo = () => new Promise((resolve, reject) => {
-  try {
-    const imgArr = [];
-    const size = [];
-    const color = [];
-    const detailTag = [];
-    const detailImgs = [];
+const formatDetailInfo = () =>
+  new Promise((resolve, reject) => {
+    try {
+      const imgArr = [];
+      const size = [];
+      const color = [];
+      const detailTag = [];
+      const detailImgs = [];
 
-    const videoSrc =
+      const videoSrc =
         $('.product-img-box')
           .find('#video-flv')
           .attr('data-url') || '';
-    $('.product-img-box .small-img-list li').each((index, element) => {
-      const imgUrl = $(element)
-        .find('img')
-        .attr('big');
+      $('.product-img-box .small-img-list li').each((index, element) => {
+        const imgUrl = $(element)
+          .find('img')
+          .attr('big');
         // 220缩略图 450 中图  750 大图
-      imgArr.push(imgUrl);
-    });
-
-    $('.product-details')
-      .find('.properties-box .more-c-c li')
-      .each((index, element) => {
-        const item = $(element).attr('title');
-        size.push(item);
+        imgArr.push(imgUrl);
       });
 
-    $('.product-details')
-      .find('.properties-box-c .more-c-c li')
-      .each((index, element) => {
-        const onColor = $(element).attr('title');
-        color.push(onColor);
-      });
+      $('.product-details')
+        .find('.properties-box .more-c-c li')
+        .each((index, element) => {
+          const item = $(element).attr('title');
+          size.push(item);
+        });
 
-    $('.product-center-box')
-      .find('.details-attribute-list li')
-      .each((index, element) => {
-        let tags;
-        if ($(element).text()) {
-          tags = $(element).text() || '';
-          const tag = formatString(tags);
-          detailTag.push(tag);
-        }
-      });
+      $('.product-details')
+        .find('.properties-box-c .more-c-c li')
+        .each((index, element) => {
+          const onColor = $(element).attr('title');
+          color.push(onColor);
+        });
 
-    $('.product-center-box')
-      .find('.product-details-content img')
-      .each((index, element) => {
-        if (index < 8) {
-          const imgsrc = $(element).attr('data-url');
-          detailImgs.push(imgsrc);
-        }
-      });
-    const itemDetail = {
-      videoSrc,
-      imgs: imgArr,
-      size,
-      color,
-      detailTag,
-      detailImgs
-    };
-    allData.push(itemDetail);
-    resolve(allData);
-  } catch (e) {
-    reject(e);
-  }
-});
+      $('.product-center-box')
+        .find('.details-attribute-list li')
+        .each((index, element) => {
+          let tags;
+          if ($(element).text()) {
+            tags = $(element).text() || '';
+            const tag = formatString(tags);
+            detailTag.push(tag);
+          }
+        });
+
+      $('.product-center-box')
+        .find('.product-details-content img')
+        .each((index, element) => {
+          if (index < 8) {
+            const imgsrc = $(element).attr('data-url');
+            detailImgs.push(imgsrc);
+          }
+        });
+      const itemDetail = {
+        videoSrc,
+        imgs: imgArr,
+        size,
+        color,
+        detailTag,
+        detailImgs
+      };
+      allData.push(itemDetail);
+      resolve(allData);
+    } catch (e) {
+      reject(e);
+    }
+  });
 
 const formatString = (str) => {
   str = str.replace(/[\s{2,}\b\r\n\t]/g, '');
