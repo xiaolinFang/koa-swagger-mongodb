@@ -18,7 +18,7 @@ const collectionParams = {
     require: true,
     description: 'Collection name',
     default: ''
-  },
+  }
 };
 const CollectName = {
   name: {
@@ -70,7 +70,6 @@ export default class autoGenerate {
       };
     }
     ctx.body = result;
-
   }
 
   // 删
@@ -81,7 +80,6 @@ export default class autoGenerate {
   @middlewares([logTime()])
   @body(CollectName)
   static async deleteCollection(ctx) {
-
     const params = ctx.request.body;
     let result = {};
 
@@ -91,7 +89,6 @@ export default class autoGenerate {
 
     if (!checkCollectionByName.data.length) {
       throw Error(`The collection '${params.name}' does not exist`);
-
     }
     result = await dbClient.remove('collectConfig', {
       name: params.name

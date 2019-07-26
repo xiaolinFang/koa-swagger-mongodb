@@ -52,12 +52,18 @@ class Db {
     page = page || 0;
     pageSize = pageSize || 0;
 
-
     return new Promise((resolve, reject) => {
       self.connect().then((db) => {
         // let result = db.collection(collectionName).find(json, filterConditions)
         // TODO: filterConditions 过滤字段显示状态不成功，待解决
-        const result = page && pageSize ? db.collection(collectionName).find(json, filterConditions).limit(pageSize).skip((page - 1) * pageSize) : db.collection(collectionName).find(json, filterConditions);
+        const result =
+          page && pageSize
+            ? db
+              .collection(collectionName)
+              .find(json, filterConditions)
+              .limit(pageSize)
+              .skip((page - 1) * pageSize)
+            : db.collection(collectionName).find(json, filterConditions);
 
         result.toArray((err, docs) => {
           if (err) {
@@ -72,15 +78,19 @@ class Db {
   update(collectionName, json1, json2) {
     return new Promise((resolve, reject) => {
       this.connect().then((db) => {
-        db.collection(collectionName).updateMany(json1, {
-          $set: json2
-        }, (err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(result);
+        db.collection(collectionName).updateMany(
+          json1,
+          {
+            $set: json2
+          },
+          (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
           }
-        });
+        );
       });
     });
   }
@@ -140,14 +150,14 @@ class Db {
           if (err) {
             reject(self.foramtResult(err, 'error'));
           } else if (parseInt(result.result.n) > 0) {
-              let responseMessage = `success for delete user with ${JSON.stringify(json)}`
-              let response = self.foramtResult(result, 'success') // ,responseMessage 添加返回消息，则不返回数据库结果数据
-              resolve(response)
-            } else {
-              let message = `fail to delete user with ${JSON.stringify(json)}`
-              let response = self.foramtResult(result, 'error', message)
-              resolve(response)
-            }
+            const responseMessage = `success for delete user with ${JSON.stringify(json)}`;
+            const response = self.foramtResult(result, 'success'); // ,responseMessage 添加返回消息，则不返回数据库结果数据
+            resolve(response);
+          } else {
+            const message = `fail to delete user with ${JSON.stringify(json)}`;
+            const response = self.foramtResult(result, 'error', message);
+            resolve(response);
+          }
         });
       });
     });

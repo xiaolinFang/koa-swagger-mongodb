@@ -10,7 +10,11 @@ import {
 } from '../../../dist';
 import dbClient from '../../middleware/db';
 // .toUpperCase()
-const tag = tags(['admin'.toLowerCase().replace('admin'.charAt(0), 'admin'.charAt(0).toUpperCase())]);
+const tag = tags([
+  'admin'
+    .toLowerCase()
+    .replace('admin'.charAt(0), 'admin'.charAt(0).toUpperCase())
+]);
 
 const bodyConditions = {
   // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
@@ -47,7 +51,8 @@ const queryConditions = {
   },
   filterFileds: {
     type: 'string',
-    description: '字段过滤条件 除_id 外，其他不同字段不能同时设置显示和隐藏，只能二选一'
+    description:
+      '字段过滤条件 除_id 外，其他不同字段不能同时设置显示和隐藏，只能二选一'
   }
 };
 const loginParams = {
@@ -119,28 +124,26 @@ export default class admin {
   @body({})
   // @path({ id: { type: 'string', required: true } })
   static async deleteMany(ctx) {
-    let params = ctx.request.body
-    let paramsData = {}
+    const params = ctx.request.body;
+    const paramsData = {};
     if (params._id) {
       try {
         // paramsData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
         // if(paramsData['_id']){
         //   paramsData._id = dbClient.getObjectId(paramsData['_id'])
         // }
-        paramsData._id = dbClient.getObjectId(params['_id'])
-        let result = await dbClient.remove('admin', paramsData)
-        ctx.body = result
-
+        paramsData._id = dbClient.getObjectId(params._id);
+        const result = await dbClient.remove('admin', paramsData);
+        ctx.body = result;
       } catch (e) {
         // console.log('Jsonstr is not a json string',e)
-        throw Error(e)
-        
+        throw Error(e);
       }
     } else {
       ctx.body = {
         code: 400,
         message: '_id is undefined'
-      }
+      };
     }
   }
   // 改
@@ -151,26 +154,35 @@ export default class admin {
   @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
-    let params = ctx.request.body
-    let condition = {}
-    let postData = {}
-    let result = {}
+    const params = ctx.request.body;
+    let condition = {};
+    let postData = {};
+    let result = {};
     if (params.condition !== undefined && params.jsonStr !== undefined) {
       try {
-        condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
-        postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-        result = await dbClient.update('admin', condition, postData)
+        condition =
+          typeof params.condition === 'string'
+            ? JSON.parse(params.condition)
+            : params.condition;
+        postData =
+          typeof params.jsonStr === 'string'
+            ? JSON.parse(params.jsonStr)
+            : params.jsonStr;
+        result = await dbClient.update('admin', condition, postData);
       } catch (e) {
         console.log(e);
-        throw Error('Jsonstr is not a json string')
+        throw Error('Jsonstr is not a json string');
       }
-      ctx.body = result
+      ctx.body = result;
     } else {
       ctx.body = {
         code: 500,
-        message: params.condition ? 'jsonStr undefined' : (params.jsonStr ? 'condition json string undefined' : ' condition and jsonStr json string all undefined or {}')
-      }
-      
+        message: params.condition
+          ? 'jsonStr undefined'
+          : params.jsonStr
+            ? 'condition json string undefined'
+            : ' condition and jsonStr json string all undefined or {}'
+      };
     }
   }
   // 查
@@ -179,25 +191,33 @@ export default class admin {
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
-    let params = ctx.request.query
-    let filterConditions = {}
-    let paramsData = {}
-    if (params['jsonStr'] && params['jsonStr'] !== undefined) {
+    const params = ctx.request.query;
+    let filterConditions = {};
+    let paramsData = {};
+    if (params.jsonStr && params.jsonStr !== undefined) {
       try {
-        paramsData = JSON.parse(params.jsonStr)
+        paramsData = JSON.parse(params.jsonStr);
       } catch (e) {
-        throw Error('Jsonstr is not a json string')
-        
+        throw Error('Jsonstr is not a json string');
       }
     }
-    if (params['filterFileds']) {
-      filterConditions = JSON.parse(params.filterFileds)
+    if (params.filterFileds) {
+      filterConditions = JSON.parse(params.filterFileds);
     }
-    if (paramsData['_id']) {
-      paramsData._id = dbClient.getObjectId(paramsData['_id'])
+    if (paramsData._id) {
+      paramsData._id = dbClient.getObjectId(paramsData._id);
     }
-    let result = params['page'] && params['pageSize'] ? await dbClient.find('admin', paramsData, filterConditions, params.page, params.pageSize) : await dbClient.find('admin', paramsData, filterConditions)
-    ctx.body = result
+    const result =
+      params.page && params.pageSize
+        ? await dbClient.find(
+          'admin',
+          paramsData,
+          filterConditions,
+          params.page,
+          params.pageSize
+        )
+        : await dbClient.find('admin', paramsData, filterConditions);
+    ctx.body = result;
   }
   /**
    * 登陆

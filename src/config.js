@@ -1,6 +1,6 @@
 const common = {
-  baseUrl: 'http://localhost:8083',
-  port: 8083
+  baseUrl: 'http://127.0.0.1',
+  port: 3000
 };
 
 export default common;

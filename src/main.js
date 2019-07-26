@@ -34,7 +34,6 @@ app
 //   allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
 // })));
 
-
 export default app.listen(config.port, () => {
   console.log(`App is listening on ${config.port}.`);
 });
