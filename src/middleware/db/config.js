@@ -1,5 +1,5 @@
 const app = {
   dbUrl: 'mongodb://localhost:27017/',
-  dbName: 'bc_house'
+  dbName: 'bc-house'
 };
 module.exports = app;

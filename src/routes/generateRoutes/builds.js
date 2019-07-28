@@ -11,9 +11,9 @@ import {
 import dbClient from '../../middleware/db';
 // .toUpperCase()
 const tag = tags([
-  'RouteName'
+  'builds'
     .toLowerCase()
-    .replace('RouteName'.charAt(0), 'RouteName'.charAt(0).toUpperCase())
+    .replace('builds'.charAt(0), 'builds'.charAt(0).toUpperCase())
 ]);
 
 const bodyConditions = {
@@ -61,16 +61,18 @@ const logTime = () => async (ctx, next) => {
   await next();
   console.timeEnd('start');
 };
-export default class RouteName {
+export default class builds {
   // 增
-  @request('POST', '/RouteName/add')
-  @summary('add RouteName')
-  @description('add a RouteName')
+  @request('POST', '/builds/add')
+  @summary('add builds')
+  @description('add a builds')
   @tag
   @middlewares([logTime()])
-  @body(bodyConditions)
-  static async add(ctx) {
+  @body({})
+  static async register(ctx) {
     const params = ctx.request.body;
+    console.log(params, '/params');
+
     if (!Object.keys(params).length) {
       ctx.body = {
         code: 400,
@@ -78,12 +80,12 @@ export default class RouteName {
       };
       return;
     }
-    const result = await dbClient.insert('RouteName', params);
+    const result = await dbClient.insert('builds', params);
     ctx.body = result;
   }
   // 删
-  @request('DELETE', '/RouteName/delete')
-  @summary('delete RouteName by condition')
+  @request('DELETE', '/builds/delete')
+  @summary('delete builds by condition')
   @tag
   @body(bodyConditions)
   // @path({ id: { type: 'string', required: true } })
@@ -99,7 +101,7 @@ export default class RouteName {
         if (paramsData._id) {
           paramsData._id = dbClient.getObjectId(paramsData._id);
         }
-        const result = await dbClient.remove('RouteName', paramsData);
+        const result = await dbClient.remove('builds', paramsData);
         ctx.body = result;
       } catch (e) {
         // console.log('Jsonstr is not a json string',e)
@@ -113,9 +115,9 @@ export default class RouteName {
     }
   }
   // 改
-  @request('Put', '/RouteName/update')
-  @summary('update RouteName')
-  @description('update a RouteName')
+  @request('Put', '/builds/update')
+  @summary('update builds')
+  @description('update a builds')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
@@ -128,7 +130,7 @@ export default class RouteName {
     //   try {
     //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
     //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('RouteName',condition,postData)
+    //     result = await dbClient.update('builds',condition,postData)
     //   } catch (e) {
     //     console.log(e);
     //     throw Error('Jsonstr is not a json string')
@@ -156,37 +158,38 @@ export default class RouteName {
     }
   }
   // 查
-  @request('get', '/RouteName/find')
-  @summary('RouteName list / query by condition')
+  @request('post', '/builds/find')
+  @summary('builds list / query by condition')
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
-    const params = ctx.request.query;
-    let filterConditions = {};
-    let paramsData = {};
-    if (params.jsonStr && params.jsonStr !== undefined) {
-      try {
-        paramsData = JSON.parse(params.jsonStr);
-      } catch (e) {
-        throw Error('Jsonstr is not a json string');
+    const params = ctx.request.body;
+    const filterConditions = {};
+    const paramsData = {};
+
+    if (params.keyword) {
+      paramsData.name = new RegExp(params.keyword);
+    }
+    if (params.region && params.region.length) {
+      if (params.region[0] && !params.region[1]) {
+        paramsData.region = [params.region[0], new RegExp(/^[0-9]*$/)];
+      }
+      if (params.region[0] && params.region[1]) {
+        paramsData.region = params.region;
       }
     }
-    if (params.filterFileds) {
-      filterConditions = JSON.parse(params.filterFileds);
-    }
-    if (paramsData._id) {
-      paramsData._id = dbClient.getObjectId(paramsData._id);
-    }
+    console.log(paramsData);
+
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
-          'RouteName',
+          'builds',
           paramsData,
           filterConditions,
           params.page,
           params.pageSize
         )
-        : await dbClient.find('RouteName', paramsData, filterConditions);
+        : await dbClient.find('builds', paramsData, filterConditions);
     ctx.body = result;
   }
 }
