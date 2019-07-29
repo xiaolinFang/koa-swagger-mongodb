@@ -172,14 +172,14 @@ export default class builds {
     }
     if (params.region && params.region.length) {
       if (params.region[0] && !params.region[1]) {
-        paramsData.region = [params.region[0], new RegExp(/^[0-9]*$/)];
+        paramsData.area = params.region[0];
       }
       if (params.region[0] && params.region[1]) {
         paramsData.region = params.region;
+        // paramsData.area = params.region[0];
+        // paramsData.county = params.region[1];
       }
     }
-    console.log(paramsData);
-
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
@@ -190,6 +190,9 @@ export default class builds {
           params.pageSize
         )
         : await dbClient.find('builds', paramsData, filterConditions);
+    result.data = result.data.reverse();
+
+    // result.data.sort(-1);
     ctx.body = result;
   }
 }
