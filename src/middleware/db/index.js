@@ -98,6 +98,23 @@ class Db {
       });
     });
   }
+  upCustomers(collectionName, json1, json2) {
+    return new Promise((resolve, reject) => {
+      this.connect().then((db) => {
+        db.collection(collectionName).updateOne(
+          json1,
+          json2,
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+    });
+  }
 
   insert(collectionName, json) {
     const self = this;

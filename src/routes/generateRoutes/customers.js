@@ -24,18 +24,6 @@ const bodyConditions = {
     description: 'json 字符串'
   }
 };
-const upDateJson = {
-  condition: {
-    type: 'object',
-    require: 'true',
-    description: 'Update the conditional json string'
-  },
-  json: {
-    type: 'object',
-    require: 'true',
-    description: 'Update the data json string'
-  }
-};
 const queryConditions = {
   jsonStr: {
     type: 'string',
@@ -112,47 +100,41 @@ export default class customers {
     }
   }
   // 改
-  @request('Put', '/customers/update')
+  @request('Put', '/customers/updatefollow')
   @summary('update customers')
   @description('update a customers')
   @tag
   @middlewares([logTime()])
-  @body(upDateJson)
-  static async updateData(ctx, next) {
+  @body({})
+  static async updateData(ctx) {
     const params = ctx.request.body;
-    const condition = {};
-    const postData = {};
-    let result = {};
-    // if(params.condition !== undefined && params.jsonStr !== undefined){
-    //   try {
-    //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
-    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('customers',condition,postData)
-    //   } catch (e) {
-    //     console.log(e);
-    //     throw Error('Jsonstr is not a json string')
-    //   }
-    //   ctx.body = result
-    // }
-    if (params.json !== undefined && params.condition !== undefined) {
-      try {
-        delete params.json._id;
-        condition._id = dbClient.getObjectId(params.condition._id);
-        result = await dbClient.update('config', condition, params.json);
-      } catch (e) {
-        // console.log(e);
-        throw Error('jsonStr is not a json string ');
-      }
-    } else {
+    // const condition = {};
+
+    // let result = {};
+    if (!Object.keys(params).length || !params._id) {
       ctx.body = {
-        code: 500,
-        message: params.condition
-          ? 'jsonStr undefined'
-          : params.json
-            ? 'condition json string undefined'
-            : ' condition and jsonStr json string all undefined or {}'
+        code: 400,
+        message: '缺少必要参数'
       };
+      return;
     }
+    const upJson = {
+      $addToSet: {
+        follows: {
+          author: params.author,
+          desc: params.desc
+        }
+      }
+    };
+
+    const result = await dbClient.upCustomers(
+      'customers',
+      {
+        _id: dbClient.getObjectId(params._id)
+      },
+      upJson
+    );
+    ctx.body = result.result;
   }
   // 查
   @request('post', '/customers/find')
