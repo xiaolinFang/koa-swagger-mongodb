@@ -37,6 +37,7 @@ export default class Help {
         const uploadDir = `public/uploads/${fields.type}/${fields.dir}/`;
 
         mkdirsFunc(uploadDir);
+
         const filename = files.file.name;
         const prename = filename.slice(0, filename.indexOf('.'));
         const lastname = filename.slice(filename.indexOf('.'), filename.length);
