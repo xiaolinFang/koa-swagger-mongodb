@@ -61,6 +61,14 @@ const logTime = () => async (ctx, next) => {
   await next();
   console.timeEnd('start');
 };
+
+const _checkFloorLocked = dbData =>
+  dbData.some((floor) => {
+    if (floor.selected && floor.locked) {
+      return true;
+    }
+    return floor.room.some(room => room.selected && room.locked);
+  });
 export default class offices {
   // 增
   @request('POST', '/offices/add')
@@ -78,8 +86,55 @@ export default class offices {
       };
       return;
     }
-    const result = await dbClient.insert('offices', params);
-    ctx.body = result;
+    const buildInfo = params.buildinfo;
+    const builds = params.build;
+    const getBuilds = await dbClient.find('builds', {
+      _id: dbClient.getObjectId(buildInfo._id)
+    });
+    const dbBuildsData = getBuilds.data[0];
+
+    // const checkHasLock = getBuilds.builds[]
+    let haslocked = false;
+    const _dbData = [];
+    builds.map((build) => {
+      console.log(build, '/build map');
+
+      if (
+        build.rindex !== undefined &&
+        build.key !== undefined &&
+        build.index !== undefined
+      ) {
+        // 房号
+        const dbRoom = dbBuildsData.builds[build.index].floor[build.key].room;
+        console.log(dbRoom, 'dbRoom');
+      }
+      if (
+        build.rindex === undefined &&
+        build.key !== undefined &&
+        build.key !== ''
+      ) {
+        // 整层
+        const dbFloor = dbBuildsData.builds[build.index].floor;
+        haslocked = _checkFloorLocked(dbFloor);
+
+        console.log(dbFloor, 'dbFloor');
+      }
+      if (build.rindex === undefined && build.key === undefined) {
+        // 整栋
+        const dbBuild = dbBuildsData.builds[build.index];
+        console.log(dbBuild, 'dbBuild');
+      }
+    });
+
+    if (!haslocked) {
+      // false 没有被锁住的房号/楼层
+      // todo
+    }
+
+    console.log(buildInfo, builds);
+
+    // const result = await dbClient.insert('offices', params);
+    // ctx.body = result;
   }
   // 删
   @request('DELETE', '/offices/delete')
