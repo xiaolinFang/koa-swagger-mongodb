@@ -4,11 +4,11 @@ import {
   body,
   tags,
   middlewares,
-  path,
   description,
   query
 } from '../../../dist';
 import dbClient from '../../middleware/db';
+import { resolve, reject } from '_any-promise@1.3.0@any-promise';
 // .toUpperCase()
 const tag = tags([
   'offices'
@@ -16,59 +16,12 @@ const tag = tags([
     .replace('offices'.charAt(0), 'offices'.charAt(0).toUpperCase())
 ]);
 
-const bodyConditions = {
-  // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
-  // JsonStr is a data record json string object, which is used to add, delete, change, and check the data set, respectively as, insert data, delete condition, modify condition, and query condition json string object passed in
-  jsonStr: {
-    type: 'object',
-    description: 'json 字符串'
-  }
-};
-const upDateJson = {
-  condition: {
-    type: 'object',
-    require: 'true',
-    description: 'Update the conditional json string'
-  },
-  json: {
-    type: 'object',
-    require: 'true',
-    description: 'Update the data json string'
-  }
-};
-const queryConditions = {
-  jsonStr: {
-    type: 'string',
-    description: 'a jsons data string or condition'
-  },
-  page: {
-    type: 'number',
-    description: 'The current page number "Not set to query all"'
-  },
-  pageSize: {
-    type: 'number',
-    description: 'Number of data bars per page "Not set to show all"'
-  },
-  filterFileds: {
-    type: 'string',
-    description:
-      '字段过滤条件 除_id 外，其他不同字段不能同时设置显示和隐藏，只能二选一'
-  }
-};
-
 const logTime = () => async (ctx, next) => {
   console.time('start');
   await next();
   console.timeEnd('start');
 };
 
-const _checkFloorLocked = dbData =>
-  dbData.some((floor) => {
-    if (floor.selected && floor.locked) {
-      return true;
-    }
-    return floor.room.some(room => room.selected && room.locked);
-  });
 export default class offices {
   // 增
   @request('POST', '/offices/add')
@@ -91,22 +44,22 @@ export default class offices {
     const getBuilds = await dbClient.find('builds', {
       _id: dbClient.getObjectId(buildInfo._id)
     });
+
+    console.log(builds, '/builds');
+
     const dbBuildsData = getBuilds.data[0];
-
-    // const checkHasLock = getBuilds.builds[]
-    let haslocked = false;
-    const _dbData = [];
-    builds.map((build) => {
-      console.log(build, '/build map');
-
+    // 检查是否存在锁定房号
+    const haslocked = builds.some((build) => {
       if (
         build.rindex !== undefined &&
         build.key !== undefined &&
+        build.key !== '' &&
         build.index !== undefined
       ) {
         // 房号
         const dbRoom = dbBuildsData.builds[build.index].floor[build.key].room;
-        console.log(dbRoom, 'dbRoom');
+        return dbRoom.some((_room, _key) =>
+          _key === build.rindex && _room.selected && build.name === _room.name);
       }
       if (
         build.rindex === undefined &&
@@ -115,57 +68,150 @@ export default class offices {
       ) {
         // 整层
         const dbFloor = dbBuildsData.builds[build.index].floor;
-        haslocked = _checkFloorLocked(dbFloor);
-
-        console.log(dbFloor, 'dbFloor');
+        // 返回楼层是否有被锁定的房号 true 有 false  无
+        return dbFloor.some((floor) => {
+          if (floor.selected && floor.locked) {
+            return true;
+          }
+          return floor.room.some(room => room.selected && room.locked);
+        });
       }
-      if (build.rindex === undefined && build.key === undefined) {
+      if (build.rindex === undefined && !build.key && build.key !== 0) {
         // 整栋
         const dbBuild = dbBuildsData.builds[build.index];
-        console.log(dbBuild, 'dbBuild');
+        return dbBuild.floor.some((_floor) => {
+          console.log(_floor.name, '_floor');
+
+          if (_floor.selected && _floor.locked) {
+            return _floor.selected && _floor.locked;
+          }
+          _floor.room.some(_room => _room.selected && _room.locked);
+        });
       }
     });
+    console.log(haslocked, '/haslocked');
 
     if (!haslocked) {
-      // false 没有被锁住的房号/楼层
-      // todo
+      // false 没有被锁住的房号/楼层/楼栋
+      // todo 加锁，更新数据
+      const lockedBlooean = true;
+      const updateHandler = async (updateData) => {
+        const result = await dbClient.update(
+          'offices',
+          {
+            _id: dbClient.getObjectId(buildInfo._id)
+          },
+          updateData
+        );
+        return Promise.resolve(result.result);
+      };
+
+      let message = '';
+      for (let i = 0; i < builds.length; i++) {
+        const build = builds[i];
+        // builds.forEach(async (build) => {
+        if (
+          build.rindex !== undefined &&
+          build.key !== undefined &&
+          build.key !== '' &&
+          build.index !== undefined
+        ) {
+          // 房号
+          const dbRoom = dbBuildsData.builds[build.index].floor[build.key].room;
+          console.log(dbRoom, '/dbRoom');
+          const lockRoom = dbRoom.map((_room) => {
+            _room.selected = lockedBlooean;
+            _room.locked = lockedBlooean;
+            return _room;
+          });
+          const updateData = {};
+          updateData[
+            `builds.${build.index}.floor.${build.key}.room.${build.rindex}`
+          ] = lockRoom;
+          const result = updateHandler(updateData);
+          if (!result.nModified) {
+            message = '锁定失败';
+          }
+        }
+        if (
+          build.rindex === undefined &&
+          build.key !== undefined &&
+          build.key !== ''
+        ) {
+          // 整层
+          const dbFloor = dbBuildsData.builds[build.index].floor[build.key];
+          console.log(dbFloor, '/floor');
+          const lockRoom = dbFloor.room.map((_room) => {
+            _room.selected = lockedBlooean;
+            _room.locked = lockedBlooean;
+            return _room;
+          });
+          dbFloor.room = lockRoom;
+          dbFloor.selected = lockedBlooean;
+          dbFloor.locked = lockedBlooean;
+          dbFloor.roominput = '';
+          const updateData = {};
+          updateData[`builds.${build.index}.floor.${build.key}`] = dbFloor;
+          const result = updateHandler(updateData);
+
+          if (!result.nModified) {
+            message = '锁定失败';
+          }
+        }
+        if (build.rindex === undefined && !build.key && build.key !== 0) {
+          // 整栋
+          const dbBuild = dbBuildsData.builds[build.index];
+
+          const lockedFloor = dbBuild.floor.map((_floor) => {
+            _floor.selected = lockedBlooean;
+            _floor.locked = lockedBlooean;
+            _floor.room.map((_room) => {
+              _room.selected = lockedBlooean;
+              _room.locked = lockedBlooean;
+              return _room;
+            });
+            return _floor;
+          });
+          dbBuild.selected = lockedBlooean;
+          dbBuild.locked = lockedBlooean;
+          dbBuild.floor = lockedFloor;
+          dbBuild.inputfloor = '';
+          const updateData = {};
+          updateData[`builds.${build.index}`] = dbBuild;
+
+          const result = updateHandler(updateData);
+          if (!result.nModified) {
+            message = '锁定失败';
+          }
+        }
+      }
+      let tip = {};
+      console.log(message, '/message');
+
+      if (message) {
+        tip = {
+          code: 500,
+          message
+        };
+      } else {
+        tip = {
+          code: 200,
+          message: '锁定成功'
+        };
+      }
+
+      ctx.body = tip;
+    } else {
+      ctx.body = {
+        code: 400,
+        message: '已有部分房号被锁定，请重新选择房号信息'
+      };
     }
 
-    console.log(buildInfo, builds);
+    // console.log(buildInfo, builds);
 
     // const result = await dbClient.insert('offices', params);
     // ctx.body = result;
-  }
-  // 删
-  @request('DELETE', '/offices/delete')
-  @summary('delete offices by condition')
-  @tag
-  @body(bodyConditions)
-  // @path({ id: { type: 'string', required: true } })
-  static async deleteMany(ctx) {
-    const params = ctx.request.body;
-    let paramsData = {};
-    if (params.jsonStr !== undefined) {
-      try {
-        paramsData =
-          typeof params.jsonStr === 'string'
-            ? JSON.parse(params.jsonStr)
-            : params.jsonStr;
-        if (paramsData._id) {
-          paramsData._id = dbClient.getObjectId(paramsData._id);
-        }
-        const result = await dbClient.remove('offices', paramsData);
-        ctx.body = result;
-      } catch (e) {
-        // console.log('Jsonstr is not a json string',e)
-        throw Error('Jsonstr is not a json string');
-      }
-    } else {
-      ctx.body = {
-        code: 500,
-        message: 'Jsonstr is undefined'
-      };
-    }
   }
   // 改
   @request('Put', '/offices/update')
@@ -173,23 +219,13 @@ export default class offices {
   @description('update a offices')
   @tag
   @middlewares([logTime()])
-  @body(upDateJson)
+  @body({})
   static async updateData(ctx, next) {
     const params = ctx.request.body;
     const condition = {};
     const postData = {};
     let result = {};
-    // if(params.condition !== undefined && params.jsonStr !== undefined){
-    //   try {
-    //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
-    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('offices',condition,postData)
-    //   } catch (e) {
-    //     console.log(e);
-    //     throw Error('Jsonstr is not a json string')
-    //   }
-    //   ctx.body = result
-    // }
+
     if (params.json !== undefined && params.condition !== undefined) {
       try {
         delete params.json._id;
@@ -199,21 +235,12 @@ export default class offices {
         // console.log(e);
         throw Error('jsonStr is not a json string ');
       }
-    } else {
-      ctx.body = {
-        code: 500,
-        message: params.condition
-          ? 'jsonStr undefined'
-          : params.json
-            ? 'condition json string undefined'
-            : ' condition and jsonStr json string all undefined or {}'
-      };
     }
   }
   // 查
   @request('get', '/offices/find')
   @summary('offices list / query by condition')
-  @query(queryConditions)
+  @query('')
   @tag
   static async getAll(ctx) {
     const params = ctx.request.query;

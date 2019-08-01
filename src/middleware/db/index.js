@@ -82,7 +82,7 @@ class Db {
   update(collectionName, json1, json2) {
     return new Promise((resolve, reject) => {
       this.connect().then((db) => {
-        db.collection(collectionName).updateMany(
+        db.collection(collectionName).updateOne(
           json1,
           {
             $set: json2
