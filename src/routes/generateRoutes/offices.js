@@ -8,7 +8,6 @@ import {
   query
 } from '../../../dist';
 import dbClient from '../../middleware/db';
-import { resolve, reject } from '_any-promise@1.3.0@any-promise';
 // .toUpperCase()
 const tag = tags([
   'offices'
@@ -96,20 +95,17 @@ export default class offices {
       // todo 加锁，更新数据
       const lockedBlooean = true;
       const updateHandler = async (updateData) => {
-        const result = await dbClient.update(
-          'offices',
+        await dbClient.update(
+          'builds',
           {
             _id: dbClient.getObjectId(buildInfo._id)
           },
           updateData
         );
-        return Promise.resolve(result.result);
       };
 
-      let message = '';
-      for (let i = 0; i < builds.length; i++) {
-        const build = builds[i];
-        // builds.forEach(async (build) => {
+      //  锁定选择的房源
+      builds.forEach(async (build) => {
         if (
           build.rindex !== undefined &&
           build.key !== undefined &&
@@ -117,21 +113,23 @@ export default class offices {
           build.index !== undefined
         ) {
           // 房号
-          const dbRoom = dbBuildsData.builds[build.index].floor[build.key].room;
+          const dbRoom =
+            dbBuildsData.builds[build.index].floor[build.key].room[
+              build.rindex
+            ];
           console.log(dbRoom, '/dbRoom');
-          const lockRoom = dbRoom.map((_room) => {
-            _room.selected = lockedBlooean;
-            _room.locked = lockedBlooean;
-            return _room;
-          });
+          // const lockRoom = dbRoom.map((_room) => {
+          //   _room.selected = lockedBlooean;
+          //   _room.locked = lockedBlooean;
+          //   return _room;
+          // });
+          dbRoom.selected = lockedBlooean;
+          dbRoom.locked = lockedBlooean;
           const updateData = {};
           updateData[
             `builds.${build.index}.floor.${build.key}.room.${build.rindex}`
-          ] = lockRoom;
-          const result = updateHandler(updateData);
-          if (!result.nModified) {
-            message = '锁定失败';
-          }
+          ] = dbRoom;
+          updateHandler(updateData);
         }
         if (
           build.rindex === undefined &&
@@ -152,11 +150,7 @@ export default class offices {
           dbFloor.roominput = '';
           const updateData = {};
           updateData[`builds.${build.index}.floor.${build.key}`] = dbFloor;
-          const result = updateHandler(updateData);
-
-          if (!result.nModified) {
-            message = '锁定失败';
-          }
+          updateHandler(updateData);
         }
         if (build.rindex === undefined && !build.key && build.key !== 0) {
           // 整栋
@@ -178,29 +172,19 @@ export default class offices {
           dbBuild.inputfloor = '';
           const updateData = {};
           updateData[`builds.${build.index}`] = dbBuild;
-
-          const result = updateHandler(updateData);
-          if (!result.nModified) {
-            message = '锁定失败';
-          }
+          updateHandler(updateData);
         }
-      }
-      let tip = {};
-      console.log(message, '/message');
+      });
 
-      if (message) {
-        tip = {
-          code: 500,
-          message
-        };
-      } else {
-        tip = {
-          code: 200,
-          message: '锁定成功'
-        };
-      }
+      const result = await dbClient.insert('offices', params);
+      ctx.body = {
+        code: result.code,
+        message: result.message
+      };
 
-      ctx.body = tip;
+      // if (result.result)
+
+      // ctx.body = tip;
     } else {
       ctx.body = {
         code: 400,
