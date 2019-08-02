@@ -10,9 +10,9 @@ import {
 import dbClient from '../../middleware/db';
 // .toUpperCase()
 const tag = tags([
-  'offices'
+  'house'
     .toLowerCase()
-    .replace('offices'.charAt(0), 'offices'.charAt(0).toUpperCase())
+    .replace('house'.charAt(0), 'house'.charAt(0).toUpperCase())
 ]);
 
 const logTime = () => async (ctx, next) => {
@@ -21,11 +21,11 @@ const logTime = () => async (ctx, next) => {
   console.timeEnd('start');
 };
 
-export default class offices {
+export default class house {
   // 增
-  @request('POST', '/offices/add')
-  @summary('add offices')
-  @description('add a offices')
+  @request('POST', '/house/add')
+  @summary('add house')
+  @description('add a house')
   @tag
   @middlewares([logTime()])
   @body({})
@@ -176,7 +176,7 @@ export default class offices {
         }
       });
 
-      const result = await dbClient.insert('offices', params);
+      const result = await dbClient.insert('house', params);
       ctx.body = {
         code: result.code,
         message: result.message
@@ -194,18 +194,24 @@ export default class offices {
 
     // console.log(buildInfo, builds);
 
-    // const result = await dbClient.insert('offices', params);
+    // const result = await dbClient.insert('house', params);
     // ctx.body = result;
   }
   // 改
-  @request('Put', '/offices/update')
-  @summary('update offices')
-  @description('update a offices')
+  @request('Put', '/house/update')
+  @summary('update house')
+  @description('update a house')
   @tag
   @middlewares([logTime()])
   @body({})
   static async updateData(ctx, next) {
     const params = ctx.request.body;
+    if (!Object.keys(params).length) {
+      ctx.body = {
+        code: 400,
+        message: '缺少必要参数'
+      };
+    }
     const condition = {};
     const postData = {};
     let result = {};
@@ -222,37 +228,54 @@ export default class offices {
     }
   }
   // 查
-  @request('get', '/offices/find')
-  @summary('offices list / query by condition')
-  @query('')
+  @request('post', '/house/find')
+  @summary('house list / query by condition')
+  @body({})
   @tag
   static async getAll(ctx) {
-    const params = ctx.request.query;
-    let filterConditions = {};
-    let paramsData = {};
-    if (params.jsonStr && params.jsonStr !== undefined) {
-      try {
-        paramsData = JSON.parse(params.jsonStr);
-      } catch (e) {
-        throw Error('Jsonstr is not a json string');
+    const params = ctx.request.body;
+    const post_params = {};
+    Object.keys(params).map((key) => {
+      if (key !== 'page' && key !== 'pageSize') {
+        post_params[key] = params[key];
       }
-    }
-    if (params.filterFileds) {
-      filterConditions = JSON.parse(params.filterFileds);
-    }
-    if (paramsData._id) {
-      paramsData._id = dbClient.getObjectId(paramsData._id);
-    }
+    });
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
-          'offices',
-          paramsData,
-          filterConditions,
+          'house',
+          post_params,
+          {},
           params.page,
           params.pageSize
         )
-        : await dbClient.find('offices', paramsData, filterConditions);
-    ctx.body = result;
+        : await dbClient.find('house', post_params, {});
+
+    if (result.code === 200 && result.data) {
+      ctx.body = {
+        code: result.code,
+        data: result.data.map(item => ({
+          _id: item._id,
+          nature: item.nature,
+          // build: item.build,
+          type: item.type,
+          area: item.area,
+          price: item.price,
+          station: item.station,
+          partment: item.partment,
+          decorate: item.decorate,
+          aspect: item.aspect,
+          addPrice: item.addPrice,
+          jumplayer: item.jumplayer,
+          status: item.status,
+          undown: item.undown,
+          imgs: item.imgs,
+          keyImg: item.keyImg,
+          buildinfo: item.buildinfo
+        }))
+      };
+    } else {
+      ctx.body = result;
+    }
   }
 }
