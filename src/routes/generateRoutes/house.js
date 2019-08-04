@@ -270,7 +270,7 @@ export default class house {
           status: item.status,
           undown: item.undown,
           imgs: item.imgs,
-          keyImg: item.keyImg,
+          keyImg: !!item.keyImg,
           buildinfo: item.buildinfo
         }))
       };
