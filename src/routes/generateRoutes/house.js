@@ -66,20 +66,16 @@ export default class house {
         build.key !== ''
       ) {
         // 整层
-        const dbFloor = dbBuildsData.builds[build.index].floor;
+        const dbFloor = dbBuildsData.builds[build.index].floor[build.key];
         // 返回楼层是否有被锁定的房号 true 有 false  无
-        return dbFloor.some((floor) => {
-          if (floor.selected && floor.locked) {
-            return true;
-          }
-          return floor.room.some(room => room.selected && room.locked);
-        });
+
+        return dbFloor.room.some(room => room.selected && room.locked);
       }
       if (build.rindex === undefined && !build.key && build.key !== 0) {
         // 整栋
         const dbBuild = dbBuildsData.builds[build.index];
         return dbBuild.floor.some((_floor) => {
-          console.log(_floor.name, '_floor');
+          // console.log(_floor.name, '_floor');
 
           if (_floor.selected && _floor.locked) {
             return _floor.selected && _floor.locked;
@@ -149,6 +145,7 @@ export default class house {
           dbFloor.locked = lockedBlooean;
           dbFloor.roominput = '';
           const updateData = {};
+          params.tag = '整层';
           updateData[`builds.${build.index}.floor.${build.key}`] = dbFloor;
           updateHandler(updateData);
         }
@@ -171,6 +168,7 @@ export default class house {
           dbBuild.floor = lockedFloor;
           dbBuild.inputfloor = '';
           const updateData = {};
+          params.tag = '整栋';
           updateData[`builds.${build.index}`] = dbBuild;
           updateHandler(updateData);
         }
@@ -236,10 +234,29 @@ export default class house {
     const params = ctx.request.body;
     const post_params = {};
     Object.keys(params).map((key) => {
-      if (key !== 'page' && key !== 'pageSize') {
+      if (key === 'price' || key === 'area') {
+        const _values = params[key].split('-');
+        post_params[key] = {
+          $gte: parseInt(_values[0].replace('>', ''))
+        };
+        if (_values[1]) {
+          post_params[key] = {
+            $gte: parseInt(_values[0]),
+            $lte: parseInt(_values[1])
+          };
+        }
+      } else if (key === 'region') {
+        if (!params[key][1]) {
+          post_params[`buildinfo.${key}.0`] = params[key][0];
+        } else {
+          post_params[`buildinfo.${key}`] = params[key];
+        }
+      } else if (key !== 'page' && key !== 'pageSize' && params[key]) {
         post_params[key] = params[key];
       }
     });
+    console.log(post_params, '/post_params');
+
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
@@ -254,25 +271,29 @@ export default class house {
     if (result.code === 200 && result.data) {
       ctx.body = {
         code: result.code,
-        data: result.data.map(item => ({
-          _id: item._id,
-          nature: item.nature,
-          // build: item.build,
-          type: item.type,
-          area: item.area,
-          price: item.price,
-          station: item.station,
-          partment: item.partment,
-          decorate: item.decorate,
-          aspect: item.aspect,
-          addPrice: item.addPrice,
-          jumplayer: item.jumplayer,
-          status: item.status,
-          undown: item.undown,
-          imgs: item.imgs,
-          keyImg: !!item.keyImg,
-          buildinfo: item.buildinfo
-        }))
+        data: result.data
+          .map(item => ({
+            _id: item._id,
+            nature: item.nature,
+            // build: item.build,
+            type: item.type,
+            area: item.area,
+            price: item.price,
+            station: item.station,
+            partment: item.partment,
+            decorate: item.decorate,
+            aspect: item.aspect,
+            addPrice: item.addPrice,
+            jumplayer: item.jumplayer,
+            status: item.status,
+            undown: item.undown,
+            imgs: item.imgs,
+            keyImg: !!item.keyImg,
+            buildinfo: item.buildinfo,
+            tag: item.tag || '',
+            time: item.time
+          }))
+          .reverse()
       };
     } else {
       ctx.body = result;
