@@ -44,7 +44,7 @@ export default class house {
       _id: dbClient.getObjectId(buildInfo._id)
     });
 
-    console.log(builds, '/builds');
+    // console.log(builds, '/builds');
 
     const dbBuildsData = getBuilds.data[0];
     // 检查是否存在锁定房号
@@ -84,7 +84,7 @@ export default class house {
         });
       }
     });
-    console.log(haslocked, '/haslocked');
+    // console.log(haslocked, '/haslocked');
 
     if (!haslocked) {
       // false 没有被锁住的房号/楼层/楼栋
@@ -113,7 +113,7 @@ export default class house {
             dbBuildsData.builds[build.index].floor[build.key].room[
               build.rindex
             ];
-          console.log(dbRoom, '/dbRoom');
+          // console.log(dbRoom, '/dbRoom');
           // const lockRoom = dbRoom.map((_room) => {
           //   _room.selected = lockedBlooean;
           //   _room.locked = lockedBlooean;
@@ -122,6 +122,13 @@ export default class house {
           dbRoom.selected = lockedBlooean;
           dbRoom.locked = lockedBlooean;
           const updateData = {};
+          const _floorName =
+            dbBuildsData.builds[build.index].floor[build.key].name;
+          params.floor =
+            parseInt(_floorName).toString !== 'NaN'
+              ? parseInt(_floorName)
+              : _floorName;
+
           updateData[
             `builds.${build.index}.floor.${build.key}.room.${build.rindex}`
           ] = dbRoom;
@@ -146,6 +153,10 @@ export default class house {
           dbFloor.roominput = '';
           const updateData = {};
           params.tag = '整层';
+          params.floor =
+            parseInt(dbFloor.name).toString !== 'NaN'
+              ? parseInt(dbFloor.name)
+              : dbFloor.name;
           updateData[`builds.${build.index}.floor.${build.key}`] = dbFloor;
           updateHandler(updateData);
         }
@@ -169,6 +180,11 @@ export default class house {
           dbBuild.inputfloor = '';
           const updateData = {};
           params.tag = '整栋';
+          const _floorName = dbBuild.floor[build.key].name;
+          params.floor =
+            parseInt(_floorName).toString !== 'NaN'
+              ? parseInt(_floorName)
+              : _floorName;
           updateData[`builds.${build.index}`] = dbBuild;
           updateHandler(updateData);
         }
@@ -234,7 +250,13 @@ export default class house {
     const params = ctx.request.body;
     const post_params = {};
     Object.keys(params).map((key) => {
-      if (key === 'price' || key === 'area') {
+      if (
+        key === 'price' ||
+        key === 'area' ||
+        key === 'station' ||
+        key === 'partment' ||
+        key === 'floor'
+      ) {
         const _values = params[key].split('-');
         post_params[key] = {
           $gte: parseInt(_values[0].replace('>', ''))
@@ -291,7 +313,9 @@ export default class house {
             keyImg: !!item.keyImg,
             buildinfo: item.buildinfo,
             tag: item.tag || '',
-            time: item.time
+            time: item.time,
+            key: item.key,
+            pic: item.pic
           }))
           .reverse()
       };
