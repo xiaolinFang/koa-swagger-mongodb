@@ -218,7 +218,7 @@ export default class house {
   @tag
   @middlewares([logTime()])
   @body({})
-  static async updateData(ctx, next) {
+  static async updateData(ctx) {
     const params = ctx.request.body;
     if (!Object.keys(params).length) {
       ctx.body = {
