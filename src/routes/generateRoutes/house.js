@@ -249,35 +249,55 @@ export default class house {
   static async getAll(ctx) {
     const params = ctx.request.body;
     const post_params = {};
+
     Object.keys(params).map((key) => {
-      if (
-        key === 'price' ||
-        key === 'area' ||
-        key === 'station' ||
-        key === 'partment' ||
-        key === 'floor'
-      ) {
-        const _values = params[key].split('-');
-        post_params[key] = {
-          $gte: parseInt(_values[0].replace('>', ''))
-        };
-        if (_values[1]) {
+      switch (key) {
+        case 'price':
+        case 'area':
+        case 'station':
+        case 'partment':
+        case 'floor':
+          const _values = params[key].split('-');
           post_params[key] = {
-            $gte: parseInt(_values[0]),
-            $lte: parseInt(_values[1])
+            $gte: parseInt(_values[0].replace('>', ''))
           };
-        }
-      } else if (key === 'region') {
-        if (!params[key][1]) {
-          post_params[`buildinfo.${key}.0`] = params[key][0];
-        } else {
-          post_params[`buildinfo.${key}`] = params[key];
-        }
-      } else if (key !== 'page' && key !== 'pageSize' && params[key]) {
-        post_params[key] = params[key];
+          if (_values[1]) {
+            post_params[key] = {
+              $gte: parseInt(_values[0]),
+              $lte: parseInt(_values[1])
+            };
+          }
+          break;
+        case 'pic':
+        case 'key':
+        case 'addPrice':
+        case 'updown':
+        case 'jumplayer':
+          post_params[key] = {
+            $in: params[key]
+          };
+          break;
+        case 'region':
+          if (!params[key][1]) {
+            post_params[`buildinfo.${key}.0`] = params[key][0];
+          } else {
+            post_params[`buildinfo.${key}`] = params[key];
+          }
+          break;
+        case 'page':
+        case 'pageSize':
+          break;
+        case 'floorName':
+          post_params.floor = params[key];
+          break;
+        case 'keyword':
+          post_params['buildinfo.name'] = new RegExp(params[key]);
+          break;
+        default:
+          post_params[key] = params[key];
       }
     });
-    console.log(post_params, '/post_params');
+    console.log(post_params, '//');
 
     const result =
       params.page && params.pageSize
@@ -293,6 +313,7 @@ export default class house {
     if (result.code === 200 && result.data) {
       ctx.body = {
         code: result.code,
+        count: result.count,
         data: result.data
           .map(item => ({
             _id: item._id,
