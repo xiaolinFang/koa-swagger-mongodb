@@ -27,6 +27,8 @@ export default class Help {
 
     const upload = new Promise((resolve) => {
       form((opt, { fields, files }) => {
+        console.log(fields, files, '//');
+
         if (!fields.type || !fields.dir) {
           ctx.body = {
             code: 400,

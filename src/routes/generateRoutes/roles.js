@@ -9,10 +9,11 @@ import {
   query
 } from '../../../dist';
 import dbClient from '../../middleware/db';
-import { stat } from 'fs';
 // .toUpperCase()
 const tag = tags([
-  'user'.toLowerCase().replace('user'.charAt(0), 'user'.charAt(0).toUpperCase())
+  'roles'
+    .toLowerCase()
+    .replace('roles'.charAt(0), 'roles'.charAt(0).toUpperCase())
 ]);
 
 const bodyConditions = {
@@ -54,28 +55,21 @@ const queryConditions = {
       '字段过滤条件 除_id 外，其他不同字段不能同时设置显示和隐藏，只能二选一'
   }
 };
-const token = {
-  token: {
-    type: 'string',
-    require: true,
-    description: '登录用户token'
-  }
-};
 
 const logTime = () => async (ctx, next) => {
   console.time('start');
   await next();
   console.timeEnd('start');
 };
-export default class user {
+export default class roles {
   // 增
-  @request('POST', '/user/add')
-  @summary('add user')
-  @description('add a user')
+  @request('POST', '/roles/add')
+  @summary('add roles')
+  @description('add a roles')
   @tag
   @middlewares([logTime()])
   @body(bodyConditions)
-  static async register(ctx) {
+  static async add(ctx) {
     const params = ctx.request.body;
     if (!Object.keys(params).length) {
       ctx.body = {
@@ -84,23 +78,12 @@ export default class user {
       };
       return;
     }
-    // todo 验证 手机号 登陆账号是否存在
-
-    const result = await dbClient.insert('user', params);
-    let message = '';
-    if (result.code === 200) {
-      message = '添加成功';
-    } else {
-      message = '添加失败';
-    }
-    ctx.body = {
-      code: result.code,
-      message
-    };
+    const result = await dbClient.insert('roles', params);
+    ctx.body = result;
   }
   // 删
-  @request('DELETE', '/user/delete')
-  @summary('delete user by condition')
+  @request('DELETE', '/roles/delete')
+  @summary('delete roles by condition')
   @tag
   @body(bodyConditions)
   // @path({ id: { type: 'string', required: true } })
@@ -116,7 +99,7 @@ export default class user {
         if (paramsData._id) {
           paramsData._id = dbClient.getObjectId(paramsData._id);
         }
-        const result = await dbClient.remove('user', paramsData);
+        const result = await dbClient.remove('roles', paramsData);
         ctx.body = result;
       } catch (e) {
         // console.log('Jsonstr is not a json string',e)
@@ -130,45 +113,55 @@ export default class user {
     }
   }
   // 改
-  @request('Put', '/user/update')
-  @summary('update user')
-  @description('update a user')
+  @request('Put', '/roles/update')
+  @summary('update roles')
+  @description('update a roles')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
-  static async updateData(ctx) {
+  static async updateData(ctx, next) {
     const params = ctx.request.body;
-    if (!params.condition || !params.json) {
-      ctx.body = {
-        code: 400,
-        message: '缺少必传参数'
-      };
-      return;
-    }
-
-    params.condition._id = dbClient.getObjectId(params.condition._id);
-    const result = await dbClient.update('user', params.condition, params.json);
-    if (result.result && result.result.nModified && result.result.ok) {
-      ctx.body = {
-        code: 200,
-        message: '保存成功'
-      };
+    const condition = {};
+    const postData = {};
+    let result = {};
+    // if(params.condition !== undefined && params.jsonStr !== undefined){
+    //   try {
+    //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
+    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
+    //     result = await dbClient.update('roles',condition,postData)
+    //   } catch (e) {
+    //     console.log(e);
+    //     throw Error('Jsonstr is not a json string')
+    //   }
+    //   ctx.body = result
+    // }
+    if (params.json !== undefined && params.condition !== undefined) {
+      try {
+        delete params.json._id;
+        condition._id = dbClient.getObjectId(params.condition._id);
+        result = await dbClient.update('config', condition, params.json);
+      } catch (e) {
+        // console.log(e);
+        throw Error('jsonStr is not a json string ');
+      }
     } else {
       ctx.body = {
         code: 500,
-        message: '更新失败'
+        message: params.condition
+          ? 'jsonStr undefined'
+          : params.json
+            ? 'condition json string undefined'
+            : ' condition and jsonStr json string all undefined or {}'
       };
     }
   }
   // 查
-  @request('post', '/user/find')
-  @summary('user list / query by condition')
+  @request('get', '/roles/find')
+  @summary('roles list / query by condition')
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
-    const params = ctx.request.body;
-    console.log(params, '/geit params');
-
+    const params = ctx.request.query;
     let filterConditions = {};
     let paramsData = {};
     if (params.jsonStr && params.jsonStr !== undefined) {
@@ -187,50 +180,13 @@ export default class user {
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
-          'user',
+          'roles',
           paramsData,
           filterConditions,
           params.page,
           params.pageSize
         )
-        : await dbClient.find('user', paramsData, filterConditions);
+        : await dbClient.find('roles', paramsData, filterConditions);
     ctx.body = result;
-  }
-  // 用户登录
-  @request('post', '/user/login')
-  @summary('user login by name and password')
-  @query(queryConditions)
-  @tag
-  static async login(ctx) {
-    const params = ctx.request.body;
-    if (params.name && params.password) {
-      const result = await dbClient.find('user', params);
-      ctx.body = result;
-    } else {
-      ctx.body = {
-        code: 400,
-        message: '缺少必填字段'
-      };
-    }
-  }
-  // 根据token （id）获取用户信息
-  @request('get', '/user/info')
-  @summary('根据用户id 查询用户信息')
-  @query(token)
-  @tag
-  static async info(ctx) {
-    const params = ctx.request.query;
-    if (params.token) {
-      const _id = dbClient.getObjectId(params.token);
-      const result = await dbClient.find('user', {
-        _id
-      });
-      ctx.body = result;
-    } else {
-      ctx.body = {
-        code: 400,
-        message: 'token 必传'
-      };
-    }
   }
 }
