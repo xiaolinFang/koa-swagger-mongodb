@@ -249,6 +249,7 @@ export default class house {
   static async getAll(ctx) {
     const params = ctx.request.body;
     const post_params = {};
+    let sort = {};
 
     Object.keys(params).map((key) => {
       switch (key) {
@@ -293,6 +294,9 @@ export default class house {
         case 'keyword':
           post_params['buildinfo.name'] = new RegExp(params[key]);
           break;
+        case 'sort':
+          sort = params[key];
+          break;
         default:
           post_params[key] = params[key];
       }
@@ -306,9 +310,10 @@ export default class house {
           post_params,
           {},
           params.page,
-          params.pageSize
+          params.pageSize,
+          sort
         )
-        : await dbClient.find('house', post_params, {});
+        : await dbClient.find('house', post_params, {}, null, null, sort);
 
     if (result.code === 200 && result.data) {
       ctx.body = {

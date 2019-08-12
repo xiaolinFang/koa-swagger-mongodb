@@ -47,7 +47,7 @@ class Db {
     });
   }
 
-  find(collectionName, json, filterConditions, page, pageSize) {
+  find(collectionName, json, filterConditions, page, pageSize, sort) {
     const self = this;
     page = page || 0;
     pageSize = pageSize || 0;
@@ -67,7 +67,11 @@ class Db {
               .find(json, filterConditions)
               .limit(pageSize)
               .skip((page - 1) * pageSize)
-            : db.collection(collectionName).find(json, filterConditions);
+              .sort(sort)
+            : db
+              .collection(collectionName)
+              .find(json, filterConditions)
+              .sort(sort);
 
         result.toArray((err, docs) => {
           if (err) {
