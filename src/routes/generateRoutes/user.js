@@ -35,25 +35,6 @@ const upDateJson = {
     description: 'Update the data json string'
   }
 };
-const queryConditions = {
-  jsonStr: {
-    type: 'string',
-    description: 'a jsons data string or condition'
-  },
-  page: {
-    type: 'number',
-    description: 'The current page number "Not set to query all"'
-  },
-  pageSize: {
-    type: 'number',
-    description: 'Number of data bars per page "Not set to show all"'
-  },
-  filterFileds: {
-    type: 'string',
-    description:
-      '字段过滤条件 除_id 外，其他不同字段不能同时设置显示和隐藏，只能二选一'
-  }
-};
 const token = {
   token: {
     type: 'string',
@@ -74,7 +55,7 @@ export default class user {
   @description('add a user')
   @tag
   @middlewares([logTime()])
-  @body(bodyConditions)
+  @body({})
   static async register(ctx) {
     const params = ctx.request.body;
     if (!Object.keys(params).length) {
@@ -88,6 +69,7 @@ export default class user {
 
     const result = await dbClient.insert('user', params);
     let message = '';
+
     if (result.code === 200) {
       message = '添加成功';
     } else {
@@ -106,28 +88,19 @@ export default class user {
   // @path({ id: { type: 'string', required: true } })
   static async deleteMany(ctx) {
     const params = ctx.request.body;
-    let paramsData = {};
-    if (params.jsonStr !== undefined) {
-      try {
-        paramsData =
-          typeof params.jsonStr === 'string'
-            ? JSON.parse(params.jsonStr)
-            : params.jsonStr;
-        if (paramsData._id) {
-          paramsData._id = dbClient.getObjectId(paramsData._id);
-        }
-        const result = await dbClient.remove('user', paramsData);
-        ctx.body = result;
-      } catch (e) {
-        // console.log('Jsonstr is not a json string',e)
-        throw Error('Jsonstr is not a json string');
-      }
-    } else {
+    if (!Object.keys(params).length) {
       ctx.body = {
-        code: 500,
-        message: 'Jsonstr is undefined'
+        code: 400,
+        message: '缺少必要参数'
       };
+      return;
     }
+
+    if (params._id) {
+      params._id = dbClient.getObjectId(params._id);
+    }
+    const result = await dbClient.remove('user', params);
+    ctx.body = result;
   }
   // 改
   @request('Put', '/user/update')
@@ -160,27 +133,61 @@ export default class user {
       };
     }
   }
+  @request('post', '/user/list')
+  @summary('查询用户列表')
+  @body({})
+  @tag
+  static async getlist(ctx) {
+    const params = ctx.request.body;
+
+    const paramsData = {};
+    Object.keys(params).map((el) => {
+      if (el === '_id') paramsData[el] = dbClient.getObjectId(params[el]);
+      else if (el !== 'page' && el !== 'pageSize') paramsData[el] = params[el];
+    });
+    // if (params._id) params._id = dbClient.getObjectId(params._id);
+    const result =
+      params.page && params.pageSize
+        ? await dbClient.find(
+          'user',
+          paramsData,
+          {},
+          params.page,
+          params.pageSize
+        )
+        : await dbClient.find('user', paramsData, {});
+    ctx.body = result;
+    // 过滤 返回字段
+    // ctx.body = {
+    //   code: result.code,
+    //   data: result.data.map(user => ({
+    //     called: user.called,
+    //     name: user.name,
+    //     phone: user.phone,
+    //     roles: user.roles,
+    //     status: user.status,
+    //     _id: user._id,
+    //     avatar: user.avatar || '',
+    //     time: user.time || '',
+    //     introduction: user.introduction
+    //   }))
+    // };
+  }
   // 查
   @request('post', '/user/find')
   @summary('user list / query by condition')
-  @query(queryConditions)
+  @body({})
   @tag
   static async getAll(ctx) {
     const params = ctx.request.body;
-    console.log(params, '/geit params');
-
-    let filterConditions = {};
-    let paramsData = {};
-    if (params.jsonStr && params.jsonStr !== undefined) {
-      try {
-        paramsData = JSON.parse(params.jsonStr);
-      } catch (e) {
-        throw Error('Jsonstr is not a json string');
+    const filterConditions = {};
+    const paramsData = {};
+    Object.keys(params).map((el) => {
+      if (el !== 'page' && el !== 'pageSize' && params[el]) {
+        paramsData[el] = params[el];
       }
-    }
-    if (params.filterFileds) {
-      filterConditions = JSON.parse(params.filterFileds);
-    }
+    });
+
     if (paramsData._id) {
       paramsData._id = dbClient.getObjectId(paramsData._id);
     }
@@ -199,12 +206,20 @@ export default class user {
   // 用户登录
   @request('post', '/user/login')
   @summary('user login by name and password')
-  @query(queryConditions)
+  @body({})
   @tag
   static async login(ctx) {
     const params = ctx.request.body;
+
     if (params.name && params.password) {
       const result = await dbClient.find('user', params);
+      if (result.data.length && result.data[0].status !== 1) {
+        ctx.body = {
+          code: 500,
+          message: '账号状态异常，请联系管理员'
+        };
+        return;
+      }
       ctx.body = result;
     } else {
       ctx.body = {
