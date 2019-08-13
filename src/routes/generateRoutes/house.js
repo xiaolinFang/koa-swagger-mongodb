@@ -189,6 +189,7 @@ export default class house {
           updateHandler(updateData);
         }
       });
+      params.buildinfo._id = dbClient.getObjectId(params.buildinfo._id);
 
       const result = await dbClient.insert('house', params);
       ctx.body = {

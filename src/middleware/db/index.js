@@ -46,6 +46,23 @@ class Db {
       }
     });
   }
+  aggregate(collectionName, json) {
+    console.log(json, '////');
+
+    return new Promise((resolve, reject) => {
+      this.connect().then(async (db) => {
+        const result = db.collection(collectionName).aggregate(json);
+
+        result.toArray((err, docs) => {
+          if (err) {
+            reject(this.foramtResult(err, 'error'));
+            return;
+          }
+          resolve(this.foramtResult(docs, 'success', null, null, docs.length));
+        });
+      });
+    });
+  }
 
   find(collectionName, json, filterConditions, page, pageSize, sort) {
     const self = this;
@@ -56,10 +73,6 @@ class Db {
       self.connect().then(async (db) => {
         // let result = db.collection(collectionName).find(json, filterConditions)
         // TODO: filterConditions 过滤字段显示状态不成功，待解决
-        const count = await db
-          .collection(collectionName)
-          .find(json, filterConditions)
-          .count();
         const result =
           page && pageSize
             ? db
@@ -78,7 +91,7 @@ class Db {
             reject(self.foramtResult(err, 'error'));
             return;
           }
-          resolve(self.foramtResult(docs, 'success', null, null, count));
+          resolve(self.foramtResult(docs, 'success', null, null, docs.length));
         });
       });
     });

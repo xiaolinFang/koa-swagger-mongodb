@@ -139,7 +139,7 @@ export default class customers {
   // 查
   @request('post', '/customers/find')
   @summary('customers list / query by condition')
-  @query(queryConditions)
+  @body({})
   @tag
   static async getAll(ctx) {
     const params = ctx.request.body;
@@ -149,12 +149,17 @@ export default class customers {
     if (params._id) {
       paramsData._id = dbClient.getObjectId(params._id);
     }
-    if (params.type) {
-      paramsData.type = params.type;
-    }
-    if (params.nature) {
-      paramsData.nature = params.nature;
-    }
+    Object.keys(params).map((key) => {
+      if (
+        key !== '_id' &&
+        key !== 'page' &&
+        key !== 'pageSize' &&
+        params[key]
+      ) {
+        paramsData[key] = params[key];
+      }
+    });
+
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
@@ -165,6 +170,7 @@ export default class customers {
           params.pageSize
         )
         : await dbClient.find('customers', paramsData, filterConditions);
+
     ctx.body = result;
   }
 }

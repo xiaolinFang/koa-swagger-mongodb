@@ -71,8 +71,6 @@ export default class builds {
   @body({})
   static async register(ctx) {
     const params = ctx.request.body;
-    console.log(params, '/params');
-
     if (!Object.keys(params).length) {
       ctx.body = {
         code: 400,
@@ -160,9 +158,9 @@ export default class builds {
   // 查
   @request('post', '/builds/find')
   @summary('builds list / query by condition')
-  @query(queryConditions)
+  @body({})
   @tag
-  static async getAll(ctx) {
+  static async find(ctx) {
     const params = ctx.request.body;
     const filterConditions = {};
     const paramsData = {};
@@ -194,5 +192,73 @@ export default class builds {
 
     // result.data.sort(-1);
     ctx.body = result;
+  }
+  // 列表关联查询房源信息
+  @request('post', '/builds/list')
+  @summary('builds list / query by condition')
+  @body({})
+  @tag
+  static async getAll(ctx) {
+    const _params = ctx.request.body;
+    const paramsData = {};
+    const page = _params.page || 1;
+    const pageSize = _params.pageSize || 10;
+    Object.keys(_params).map((key) => {
+      if (key !== 'page' && key !== 'pageSize') {
+        if (_params[key] && _params[key].length && key !== 'region') {
+          paramsData[key] =
+            key === 'keywrod' ? new RegExp(_params[key]) : _params[key];
+        }
+        if (_params.region && _params.region.length) {
+          if (_params.region[0] && !_params.region[1]) {
+            paramsData['region.0'] = _params.region[0];
+          }
+          if (_params.region[0] && _params.region[1]) {
+            paramsData.region = _params.region;
+          }
+        }
+      }
+    });
+    const postAggregate = [
+      {
+        $skip: (page - 1) * pageSize
+      },
+      {
+        $limit: pageSize
+      },
+      {
+        $match: paramsData
+      },
+      {
+        $lookup: {
+          from: 'house',
+          localField: '_id',
+          foreignField: 'buildinfo._id',
+          as: 'houses'
+        }
+      },
+      {
+        $sort: {
+          time: 1
+        }
+      }
+    ];
+
+    const result = await dbClient.aggregate('builds', postAggregate);
+    const data = result.data.map((_item) => {
+      if (_item.houses.length) {
+        _item.houses = _item.houses.map(_house => ({
+          _id: _house._id,
+          area: _house.area,
+          imgs: _house.imgs
+        }));
+      }
+      return _item;
+    });
+    ctx.body = {
+      code: result.code,
+      data,
+      message: result.message
+    };
   }
 }
