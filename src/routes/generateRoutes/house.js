@@ -242,6 +242,26 @@ export default class house {
       }
     }
   }
+  // 查询房源详情by id
+  @request('get', '/house/detail')
+  @summary('根据房源id 查询房源详情')
+  @query({})
+  @tag
+  static async getdetail(ctx) {
+    const params = ctx.request.query;
+    if (!params._id) {
+      ctx.body = {
+        code: 400,
+        message: '缺少房源_id， 必传参数'
+      };
+      return;
+    }
+    if (params._id) {
+      params._id = dbClient.getObjectId(params._id);
+    }
+    const result = await dbClient.find('house', params, {});
+    ctx.body = result;
+  }
   // 查
   @request('post', '/house/find')
   @summary('house list / query by condition')
@@ -302,7 +322,6 @@ export default class house {
           post_params[key] = params[key];
       }
     });
-    console.log(post_params, '//');
 
     const result =
       params.page && params.pageSize
