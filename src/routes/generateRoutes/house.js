@@ -270,7 +270,9 @@ export default class house {
   static async getAll(ctx) {
     const params = ctx.request.body;
     const post_params = {};
-    let sort = {};
+    let sort = {
+      time: -1
+    };
 
     Object.keys(params).map((key) => {
       switch (key) {
@@ -339,31 +341,30 @@ export default class house {
       ctx.body = {
         code: result.code,
         count: result.count,
-        data: result.data
-          .map(item => ({
-            _id: item._id,
-            nature: item.nature,
-            // build: item.build,
-            type: item.type,
-            area: item.area,
-            price: item.price,
-            station: item.station,
-            partment: item.partment,
-            decorate: item.decorate,
-            aspect: item.aspect,
-            addPrice: item.addPrice,
-            jumplayer: item.jumplayer,
-            status: item.status,
-            undown: item.undown,
-            imgs: item.imgs,
-            keyImg: !!item.keyImg,
-            buildinfo: item.buildinfo,
-            tag: item.tag || '',
-            time: item.time,
-            key: item.key,
-            pic: item.pic
-          }))
-          .reverse()
+        data: result.data.map(item => ({
+          _id: item._id,
+          nature: item.nature,
+          // build: item.build,
+          type: item.type,
+          area: item.area,
+          price: item.price,
+          station: item.station,
+          partment: item.partment,
+          decorate: item.decorate,
+          aspect: item.aspect,
+          addPrice: item.addPrice,
+          jumplayer: item.jumplayer,
+          status: item.status,
+          undown: item.undown,
+          imgs: item.imgs,
+          keyImg: !!item.keyImg,
+          buildinfo: item.buildinfo,
+          tag: item.tag || '',
+          time: item.time,
+          key: item.key,
+          pic: item.pic,
+          price_total: item.price_total
+        }))
       };
     } else {
       ctx.body = result;
