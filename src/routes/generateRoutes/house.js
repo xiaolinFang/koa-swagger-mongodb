@@ -141,7 +141,7 @@ export default class house {
         ) {
           // 整层
           const dbFloor = dbBuildsData.builds[build.index].floor[build.key];
-          console.log(dbFloor, '/floor');
+          // console.log(dbFloor, '/floor');
           const lockRoom = dbFloor.room.map((_room) => {
             _room.selected = lockedBlooean;
             _room.locked = lockedBlooean;
