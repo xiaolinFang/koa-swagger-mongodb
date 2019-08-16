@@ -47,8 +47,6 @@ class Db {
     });
   }
   aggregate(collectionName, json) {
-    console.log(json, '////');
-
     return new Promise((resolve, reject) => {
       this.connect().then(async (db) => {
         const result = db.collection(collectionName).aggregate(json);

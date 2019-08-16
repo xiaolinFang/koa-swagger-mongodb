@@ -259,7 +259,20 @@ export default class house {
     if (params._id) {
       params._id = dbClient.getObjectId(params._id);
     }
-    const result = await dbClient.find('house', params, {});
+    const aggregate = [
+      {
+        $match: params
+      },
+      {
+        $lookup: {
+          from: 'builds',
+          localField: 'buildinfo._id',
+          foreignField: '_id',
+          as: 'buildDetail'
+        }
+      }
+    ];
+    const result = await dbClient.aggregate('house', aggregate);
     ctx.body = result;
   }
   // 查
