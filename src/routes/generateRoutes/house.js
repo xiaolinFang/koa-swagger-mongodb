@@ -221,26 +221,35 @@ export default class house {
   @body({})
   static async updateData(ctx) {
     const params = ctx.request.body;
-    if (!Object.keys(params).length) {
+    if (!Object.keys(params).length || !params._id) {
       ctx.body = {
         code: 400,
         message: '缺少必要参数'
       };
     }
-    const condition = {};
-    const postData = {};
-    let result = {};
-
-    if (params.json !== undefined && params.condition !== undefined) {
-      try {
-        delete params.json._id;
-        condition._id = dbClient.getObjectId(params.condition._id);
-        result = await dbClient.update('config', condition, params.json);
-      } catch (e) {
-        // console.log(e);
-        throw Error('jsonStr is not a json string ');
+    const condition = {
+      _id: dbClient.getObjectId(params._id)
+    };
+    const json = {};
+    Object.keys(params).map((key) => {
+      if (key !== '_id' && params[key]) {
+        json[key] = params[key];
       }
-    }
+    });
+    const result = await dbClient.update('house', condition, json);
+    ctx.body = {
+      data: result.result,
+      message: result.result.nModified >= 1 ? '修改成功' : '修改失败'
+    };
+    // if (params.json !== undefined && params.condition !== undefined) {
+    //   try {
+    //     if (params.json._id) delete params.json._id;
+    //     condition._id = dbClient.getObjectId(params.condition._id);
+    //     result = await dbClient.update('house', condition, params.json);
+    //   } catch (e) {
+    //     throw Error('jsonStr is not a json string ');
+    //   }
+    // }
   }
   // 查询房源详情by id
   @request('get', '/house/detail')
