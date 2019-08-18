@@ -73,7 +73,6 @@ export default class audits {
     const _checkHasDone = async () => {
       const json = {};
       json['obj._id'] = params.obj._id;
-      console.log(json, '/json');
 
       const hasdone = await dbClient.find('audits', json);
       if (hasdone.count) {
@@ -91,7 +90,7 @@ export default class audits {
     } else {
       ctx.body = {
         code: 500,
-        message: '已经提交申请无效，请勿重复申请'
+        message: '此房源已有提交“申请无效”记录，请耐心等待管理员审核'
       };
     }
   }
