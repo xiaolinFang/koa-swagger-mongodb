@@ -342,6 +342,16 @@ export default class house {
         case 'sort':
           sort = params[key];
           break;
+        case 'status':
+          post_params.$or = [
+            {
+              status: params[key]
+            },
+            {
+              'audit.status': params[key]
+            }
+          ];
+          break;
         default:
           post_params[key] = params[key];
       }

@@ -71,18 +71,22 @@ export default class audits {
       return;
     }
     const _checkHasDone = async () => {
-      const json = {};
+      const json = {
+        type: params.type
+      };
       json['obj._id'] = params.obj._id;
 
       const hasdone = await dbClient.find('audits', json);
-      if (hasdone.count) {
+      console.log(hasdone, '/hasdone');
+
+      if (hasdone.count && hasdone.data.length) {
         return true;
       }
       return false;
     };
-    if (!_checkHasDone()) {
+    const find = await _checkHasDone();
+    if (!find) {
       const result = await dbClient.insert('audits', params);
-
       ctx.body = {
         code: result.code,
         data: result.data.result
@@ -90,7 +94,7 @@ export default class audits {
     } else {
       ctx.body = {
         code: 500,
-        message: '此房源已有提交“申请无效”记录，请耐心等待管理员审核'
+        message: 'success'
       };
     }
   }
