@@ -4,12 +4,10 @@ import {
   body,
   tags,
   middlewares,
-  path,
   description,
   query
 } from '../../../dist';
 import dbClient from '../../middleware/db';
-import { stat } from 'fs';
 // .toUpperCase()
 const tag = tags([
   'user'.toLowerCase().replace('user'.charAt(0), 'user'.charAt(0).toUpperCase())
