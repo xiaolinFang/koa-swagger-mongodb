@@ -156,27 +156,22 @@ export default class user {
           params.pageSize
         )
         : await dbClient.find('user', paramsData, {});
-    // ctx.body = result;
+    ctx.body = result;
     // 过滤 返回字段
-    const data = [];
-    result.data.map((user) => {
-      if (user.status === 1) {
-        data.push({
-          called: user.called,
-          name: user.name,
-          phone: user.phone,
-          status: user.status,
-          _id: user._id,
-          avatar: user.avatar || '',
-          time: user.time || '',
-          introduction: user.introduction
-        });
-      }
-    });
-    ctx.body = {
-      code: result.code,
-      data
-    };
+    // ctx.body = {
+    //   code: result.code,
+    //   data: result.data.map(user => ({
+    //     called: user.called,
+    //     name: user.name,
+    //     phone: user.phone,
+    //     roles: user.roles,
+    //     status: user.status,
+    //     _id: user._id,
+    //     avatar: user.avatar || '',
+    //     time: user.time || '',
+    //     introduction: user.introduction
+    //   }))
+    // };
   }
   // 查
   @request('post', '/user/find')
