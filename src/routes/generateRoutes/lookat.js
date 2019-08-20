@@ -4,17 +4,26 @@ import {
   body,
   tags,
   middlewares,
+  path,
   description,
   query
 } from '../../../dist';
 import dbClient from '../../middleware/db';
 // .toUpperCase()
 const tag = tags([
-  'audits'
+  'lookat'
     .toLowerCase()
-    .replace('audits'.charAt(0), 'audits'.charAt(0).toUpperCase())
+    .replace('lookat'.charAt(0), 'lookat'.charAt(0).toUpperCase())
 ]);
 
+const bodyConditions = {
+  // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
+  // JsonStr is a data record json string object, which is used to add, delete, change, and check the data set, respectively as, insert data, delete condition, modify condition, and query condition json string object passed in
+  jsonStr: {
+    type: 'object',
+    description: 'json 字符串'
+  }
+};
 const upDateJson = {
   condition: {
     type: 'object',
@@ -52,14 +61,14 @@ const logTime = () => async (ctx, next) => {
   await next();
   console.timeEnd('start');
 };
-export default class audits {
+export default class lookat {
   // 增
-  @request('POST', '/audits/add')
-  @summary('add audits')
-  @description('add a audits')
+  @request('POST', '/lookat/add')
+  @summary('add lookat')
+  @description('add a lookat')
   @tag
   @middlewares([logTime()])
-  @body({})
+  @body(bodyConditions)
   static async add(ctx) {
     const params = ctx.request.body;
     if (!Object.keys(params).length) {
@@ -69,39 +78,14 @@ export default class audits {
       };
       return;
     }
-    const _checkHasDone = async () => {
-      const json = {
-        type: params.type
-      };
-      json['obj._id'] = params.obj._id;
-
-      const hasdone = await dbClient.find('audits', json);
-      console.log(hasdone, '/hasdone');
-
-      if (hasdone.count && hasdone.data.length) {
-        return true;
-      }
-      return false;
-    };
-    const find = await _checkHasDone();
-    if (!find) {
-      const result = await dbClient.insert('audits', params);
-      ctx.body = {
-        code: result.code,
-        data: result.data.result
-      };
-    } else {
-      ctx.body = {
-        code: 500,
-        message: 'success'
-      };
-    }
+    const result = await dbClient.insert('lookat', params);
+    ctx.body = result;
   }
   // 删
-  @request('DELETE', '/audits/delete')
-  @summary('delete audits by condition')
+  @request('DELETE', '/lookat/delete')
+  @summary('delete lookat by condition')
   @tag
-  @body({})
+  @body(bodyConditions)
   // @path({ id: { type: 'string', required: true } })
   static async deleteMany(ctx) {
     const params = ctx.request.body;
@@ -115,7 +99,7 @@ export default class audits {
         if (paramsData._id) {
           paramsData._id = dbClient.getObjectId(paramsData._id);
         }
-        const result = await dbClient.remove('audits', paramsData);
+        const result = await dbClient.remove('lookat', paramsData);
         ctx.body = result;
       } catch (e) {
         // console.log('Jsonstr is not a json string',e)
@@ -129,20 +113,22 @@ export default class audits {
     }
   }
   // 改
-  @request('Put', '/audits/update')
-  @summary('update audits')
-  @description('update a audits')
+  @request('Put', '/lookat/update')
+  @summary('update lookat')
+  @description('update a lookat')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
-  static async updateData(ctx) {
+  static async updateData(ctx, next) {
     const params = ctx.request.body;
     const condition = {};
+    const postData = {};
+    let result = {};
     // if(params.condition !== undefined && params.jsonStr !== undefined){
     //   try {
     //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
     //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('audits',condition,postData)
+    //     result = await dbClient.update('lookat',condition,postData)
     //   } catch (e) {
     //     console.log(e);
     //     throw Error('Jsonstr is not a json string')
@@ -153,6 +139,7 @@ export default class audits {
       try {
         delete params.json._id;
         condition._id = dbClient.getObjectId(params.condition._id);
+        result = await dbClient.update('config', condition, params.json);
       } catch (e) {
         // console.log(e);
         throw Error('jsonStr is not a json string ');
@@ -169,8 +156,8 @@ export default class audits {
     }
   }
   // 查
-  @request('get', '/audits/find')
-  @summary('audits list / query by condition')
+  @request('get', '/lookat/find')
+  @summary('lookat list / query by condition')
   @query(queryConditions)
   @tag
   static async getAll(ctx) {
@@ -193,13 +180,13 @@ export default class audits {
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
-          'audits',
+          'lookat',
           paramsData,
           filterConditions,
           params.page,
           params.pageSize
         )
-        : await dbClient.find('audits', paramsData, filterConditions);
+        : await dbClient.find('lookat', paramsData, filterConditions);
     ctx.body = result;
   }
 }

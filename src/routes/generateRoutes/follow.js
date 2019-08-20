@@ -4,15 +4,16 @@ import {
   body,
   tags,
   middlewares,
+  path,
   description,
   query
 } from '../../../dist';
 import dbClient from '../../middleware/db';
 // .toUpperCase()
 const tag = tags([
-  'audits'
+  'follow'
     .toLowerCase()
-    .replace('audits'.charAt(0), 'audits'.charAt(0).toUpperCase())
+    .replace('follow'.charAt(0), 'follow'.charAt(0).toUpperCase())
 ]);
 
 const upDateJson = {
@@ -52,11 +53,11 @@ const logTime = () => async (ctx, next) => {
   await next();
   console.timeEnd('start');
 };
-export default class audits {
+export default class follow {
   // 增
-  @request('POST', '/audits/add')
-  @summary('add audits')
-  @description('add a audits')
+  @request('POST', '/follow/add')
+  @summary('add follow')
+  @description('add a follow')
   @tag
   @middlewares([logTime()])
   @body({})
@@ -69,37 +70,16 @@ export default class audits {
       };
       return;
     }
-    const _checkHasDone = async () => {
-      const json = {
-        type: params.type
-      };
-      json['obj._id'] = params.obj._id;
-
-      const hasdone = await dbClient.find('audits', json);
-      console.log(hasdone, '/hasdone');
-
-      if (hasdone.count && hasdone.data.length) {
-        return true;
-      }
-      return false;
+    const result = await dbClient.insert('follow', params);
+    ctx.body = {
+      code: result.code,
+      data: result.data.result,
+      message: result.code === 200 ? '保存成功' : '保存失败'
     };
-    const find = await _checkHasDone();
-    if (!find) {
-      const result = await dbClient.insert('audits', params);
-      ctx.body = {
-        code: result.code,
-        data: result.data.result
-      };
-    } else {
-      ctx.body = {
-        code: 500,
-        message: 'success'
-      };
-    }
   }
   // 删
-  @request('DELETE', '/audits/delete')
-  @summary('delete audits by condition')
+  @request('DELETE', '/follow/delete')
+  @summary('delete follow by condition')
   @tag
   @body({})
   // @path({ id: { type: 'string', required: true } })
@@ -115,7 +95,7 @@ export default class audits {
         if (paramsData._id) {
           paramsData._id = dbClient.getObjectId(paramsData._id);
         }
-        const result = await dbClient.remove('audits', paramsData);
+        const result = await dbClient.remove('follow', paramsData);
         ctx.body = result;
       } catch (e) {
         // console.log('Jsonstr is not a json string',e)
@@ -129,20 +109,22 @@ export default class audits {
     }
   }
   // 改
-  @request('Put', '/audits/update')
-  @summary('update audits')
-  @description('update a audits')
+  @request('Put', '/follow/update')
+  @summary('update follow')
+  @description('update a follow')
   @tag
   @middlewares([logTime()])
   @body(upDateJson)
-  static async updateData(ctx) {
+  static async updateData(ctx, next) {
     const params = ctx.request.body;
     const condition = {};
+    const postData = {};
+    let result = {};
     // if(params.condition !== undefined && params.jsonStr !== undefined){
     //   try {
     //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
     //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('audits',condition,postData)
+    //     result = await dbClient.update('follow',condition,postData)
     //   } catch (e) {
     //     console.log(e);
     //     throw Error('Jsonstr is not a json string')
@@ -153,6 +135,7 @@ export default class audits {
       try {
         delete params.json._id;
         condition._id = dbClient.getObjectId(params.condition._id);
+        result = await dbClient.update('config', condition, params.json);
       } catch (e) {
         // console.log(e);
         throw Error('jsonStr is not a json string ');
@@ -169,37 +152,33 @@ export default class audits {
     }
   }
   // 查
-  @request('get', '/audits/find')
-  @summary('audits list / query by condition')
-  @query(queryConditions)
+  @request('post', '/follow/find')
+  @summary('follow list / query by condition')
+  @body({})
   @tag
   static async getAll(ctx) {
-    const params = ctx.request.query;
-    let filterConditions = {};
-    let paramsData = {};
-    if (params.jsonStr && params.jsonStr !== undefined) {
-      try {
-        paramsData = JSON.parse(params.jsonStr);
-      } catch (e) {
-        throw Error('Jsonstr is not a json string');
+    const params = ctx.request.body;
+    const filterConditions = {};
+    const paramsData = {};
+    Object.keys(params).map((key) => {
+      if (key !== 'page' && key !== 'pageSize') {
+        paramsData[key] = params[key];
       }
-    }
-    if (params.filterFileds) {
-      filterConditions = JSON.parse(params.filterFileds);
-    }
+    });
+
     if (paramsData._id) {
       paramsData._id = dbClient.getObjectId(paramsData._id);
     }
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
-          'audits',
+          'follow',
           paramsData,
           filterConditions,
           params.page,
           params.pageSize
         )
-        : await dbClient.find('audits', paramsData, filterConditions);
+        : await dbClient.find('follow', paramsData, filterConditions);
     ctx.body = result;
   }
 }
