@@ -70,6 +70,11 @@ export default class follow {
       };
       return;
     }
+    if (params.obj._id) {
+      params.obj._id = dbClient.getObjectId(params.obj._id);
+    }
+    console.log(params, '/params');
+
     const result = await dbClient.insert('follow', params);
     ctx.body = {
       code: result.code,
@@ -151,6 +156,35 @@ export default class follow {
       };
     }
   }
+  @request('post', '/follow/list')
+  @summary('list follows by obj._id')
+  @body({})
+  @tag
+  static async getlist(ctx) {
+    const params = ctx.request.body;
+    const postParams = {};
+    Object.keys(params).map((key) => {
+      if (key !== 'page' && key !== 'pageSize') {
+        if (key === 'obj._id') {
+          postParams['obj._id'] = dbClient.getObjectId(params[key]);
+        } else {
+          postParams[key] = params[key];
+        }
+      }
+    });
+    const result =
+      params.page && params.pageSize
+        ? await dbClient.find(
+          'follow',
+          postParams,
+          {},
+          params.page,
+          params.pageSize
+        )
+        : await dbClient.find('follow', postParams, {});
+
+    ctx.body = result;
+  }
   // 查
   @request('post', '/follow/find')
   @summary('follow list / query by condition')
@@ -165,10 +199,10 @@ export default class follow {
         paramsData[key] = params[key];
       }
     });
-
     if (paramsData._id) {
       paramsData._id = dbClient.getObjectId(paramsData._id);
     }
+
     const result =
       params.page && params.pageSize
         ? await dbClient.find(

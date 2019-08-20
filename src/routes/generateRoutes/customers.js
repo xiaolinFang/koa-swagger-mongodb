@@ -143,8 +143,9 @@ export default class customers {
   @tag
   static async getAll(ctx) {
     const params = ctx.request.body;
-    const filterConditions = {};
     const paramsData = {};
+    const page = params.page || 1;
+    const pageSize = params.pageSize || 10;
 
     if (params._id) {
       paramsData._id = dbClient.getObjectId(params._id);
@@ -159,17 +160,42 @@ export default class customers {
         paramsData[key] = params[key];
       }
     });
+    const aggregate = [
+      {
+        $match: paramsData
+      },
+      {
+        $skip: (page - 1) * pageSize
+      },
+      {
+        $limit: pageSize
+      },
+      {
+        $lookup: {
+          from: 'follow',
+          localField: '_id',
+          foreignField: 'obj._id',
+          as: 'follows'
+        }
+      },
+      {
+        $sort: {
+          time: 1
+        }
+      }
+    ];
+    const result = await dbClient.aggregate('customers', aggregate);
 
-    const result =
-      params.page && params.pageSize
-        ? await dbClient.find(
-          'customers',
-          paramsData,
-          filterConditions,
-          params.page,
-          params.pageSize
-        )
-        : await dbClient.find('customers', paramsData, filterConditions);
+    // const result =
+    //   params.page && params.pageSize
+    //     ? await dbClient.find(
+    //       'customers',
+    //       paramsData,
+    //       filterConditions,
+    //       params.page,
+    //       params.pageSize
+    //     )
+    //     : await dbClient.find('customers', paramsData, filterConditions);
 
     ctx.body = result;
   }
