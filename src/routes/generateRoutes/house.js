@@ -284,6 +284,19 @@ export default class house {
     const result = await dbClient.aggregate('house', aggregate);
     ctx.body = result;
   }
+  // search
+  @request('post', '/house/search')
+  @summary('录入带看时 搜索房源api')
+  @body({})
+  @tag
+  static async search(ctx) {
+    const params = ctx.request.body;
+    const sort = {
+      time: -1
+    };
+    const result = await dbClient.find('house', params, {}, 1, 20, sort);
+    ctx.body = result;
+  }
   // 查
   @request('post', '/house/find')
   @summary('house list / query by condition')
