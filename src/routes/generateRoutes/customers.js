@@ -179,6 +179,14 @@ export default class customers {
         }
       },
       {
+        $lookup: {
+          from: 'lookat',
+          localField: '_id',
+          foreignField: '_customerId',
+          as: 'lookatList'
+        }
+      },
+      {
         $sort: {
           time: 1
         }

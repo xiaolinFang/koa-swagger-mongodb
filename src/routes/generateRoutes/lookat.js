@@ -16,14 +16,6 @@ const tag = tags([
     .replace('lookat'.charAt(0), 'lookat'.charAt(0).toUpperCase())
 ]);
 
-const bodyConditions = {
-  // jsonStr 是一条数据记录json 字符串对象，用于对数据集合的增、删、改、查时，分别作为，插入数据、删除条件、修改条件、查询条件json字符串对象传入
-  // JsonStr is a data record json string object, which is used to add, delete, change, and check the data set, respectively as, insert data, delete condition, modify condition, and query condition json string object passed in
-  jsonStr: {
-    type: 'object',
-    description: 'json 字符串'
-  }
-};
 const upDateJson = {
   condition: {
     type: 'object',
@@ -68,7 +60,7 @@ export default class lookat {
   @description('add a lookat')
   @tag
   @middlewares([logTime()])
-  @body(bodyConditions)
+  @body({})
   static async add(ctx) {
     const params = ctx.request.body;
     if (!Object.keys(params).length) {
@@ -78,14 +70,60 @@ export default class lookat {
       };
       return;
     }
+    params.houses.map((el) => {
+      el._id = dbClient.getObjectId(el._id);
+      // return el;
+    });
+    params._customerId = dbClient.getObjectId(params._customerId);
+    if (params.withManage && params.withManage.length) {
+      params.withManage.map((el) => {
+        el._id = dbClient.getObjectId(el._id);
+      });
+    }
     const result = await dbClient.insert('lookat', params);
-    ctx.body = result;
+    ctx.body = {
+      code: result.code,
+      data: result.data.result,
+      message: result.code === 200 ? '带看录入成功' : '带看录入失败'
+    };
+  }
+  @request('post', '/lookat/search')
+  @summary('房源详情搜索关联带看数据')
+  @tag
+  @body({})
+  static async search(ctx) {
+    const params = ctx.request.body;
+    const filterData = [];
+    if (!params._id) {
+      ctx.body = {
+        code: 400,
+        message: '缺少必传参数'
+      };
+      return;
+    }
+
+    const result = await dbClient.find('lookat', {});
+    if (result && result.data) {
+      result.data.map((item) => {
+        if (
+          item.houses.some(el => el._id === dbClient.getObjectId(params._id))
+        ) {
+          filterData.push(item);
+        }
+      });
+      // log
+    }
+    ctx.body = {
+      code: result.code,
+      data: filterData,
+      count: filterData.length
+    };
   }
   // 删
   @request('DELETE', '/lookat/delete')
   @summary('delete lookat by condition')
   @tag
-  @body(bodyConditions)
+  @body({})
   // @path({ id: { type: 'string', required: true } })
   static async deleteMany(ctx) {
     const params = ctx.request.body;
