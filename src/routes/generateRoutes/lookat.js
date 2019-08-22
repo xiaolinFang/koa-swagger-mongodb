@@ -105,13 +105,12 @@ export default class lookat {
     const result = await dbClient.find('lookat', {});
     if (result && result.data) {
       result.data.map((item) => {
-        if (
-          item.houses.some(el => el._id === dbClient.getObjectId(params._id))
-        ) {
+        const hasSee = item.houses.some(_h => _h._id.toString() === params._id);
+
+        if (hasSee) {
           filterData.push(item);
         }
       });
-      // log
     }
     ctx.body = {
       code: result.code,
