@@ -294,6 +294,7 @@ export default class house {
     const sort = {
       time: -1
     };
+
     const result = await dbClient.find('house', params, {}, 1, 20, sort);
     ctx.body = result;
   }

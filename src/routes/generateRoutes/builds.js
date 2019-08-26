@@ -155,6 +155,20 @@ export default class builds {
       };
     }
   }
+  // search
+  @request('post', '/builds/search')
+  @summary('新建楼盘时校验')
+  @body({})
+  @tag
+  static async search(ctx) {
+    const params = ctx.request.body;
+    const sort = {
+      time: -1
+    };
+
+    const result = await dbClient.find('builds', params, {}, 1, 20, sort);
+    ctx.body = result;
+  }
   // 查
   @request('post', '/builds/find')
   @summary('builds list / query by condition')
