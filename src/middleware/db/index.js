@@ -61,6 +61,24 @@ class Db {
       });
     });
   }
+  count(collectionName, json) {
+    return new Promise((resolve, reject) => {
+      this.connect().then(async (db) => {
+        try {
+          const count = await db
+            .collection(collectionName)
+            .find(json)
+            .count();
+          resolve({
+            code: 200,
+            count
+          });
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+  }
 
   find(collectionName, json, filterConditions, page, pageSize, sort) {
     const self = this;
