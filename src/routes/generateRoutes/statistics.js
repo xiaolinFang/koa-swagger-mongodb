@@ -72,7 +72,7 @@ export default class statistics {
       type: 1
     });
     const shops = await dbClient.count('house', {
-      type: 1
+      type: 2
     });
     const newHouse = await dbClient.count('house', {
       type: 3
