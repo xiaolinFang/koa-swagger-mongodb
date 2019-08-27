@@ -73,7 +73,6 @@ export default class follow {
     if (params.obj._id) {
       params.obj._id = dbClient.getObjectId(params.obj._id);
     }
-    console.log(params, '/params');
 
     const result = await dbClient.insert('follow', params);
     ctx.body = {
