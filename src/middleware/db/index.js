@@ -49,14 +49,17 @@ class Db {
   aggregate(collectionName, json) {
     return new Promise((resolve, reject) => {
       this.connect().then(async (db) => {
-        const result = db.collection(collectionName).aggregate(json);
-
+        const result = await db.collection(collectionName).aggregate(json);
+        const count = await db
+          .collection(collectionName)
+          .find(json[0].$match)
+          .count();
         result.toArray((err, docs) => {
           if (err) {
             reject(this.foramtResult(err, 'error'));
             return;
           }
-          resolve(this.foramtResult(docs, 'success', null, null, docs.length));
+          resolve(this.foramtResult(docs, 'success', null, null, count));
         });
       });
     });
