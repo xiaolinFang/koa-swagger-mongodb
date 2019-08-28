@@ -309,7 +309,6 @@ export default class house {
     let sort = {
       time: -1
     };
-
     Object.keys(params).map((key) => {
       switch (key) {
         case 'price':
@@ -317,6 +316,7 @@ export default class house {
         case 'station':
         case 'partment':
         case 'floor':
+        case 'price_total':
           const _values = params[key].split('-');
           post_params[key] = {
             $gte: parseInt(_values[0].replace('>', ''))
@@ -333,9 +333,12 @@ export default class house {
         case 'addPrice':
         case 'updown':
         case 'jumplayer':
-          post_params[key] = {
-            $in: params[key]
-          };
+        case 'lease':
+          if (params[key].length) {
+            post_params[key] = {
+              $in: params[key]
+            };
+          }
           break;
         case 'region':
           if (!params[key][1]) {
@@ -366,11 +369,18 @@ export default class house {
             }
           ];
           break;
+        case 'isShop':
+          break;
+        case 'industry':
+        case 'shoptype':
+          if (parseInt(params[key])) {
+            post_params[key] = params[key];
+          }
+          break;
         default:
           post_params[key] = params[key];
       }
     });
-
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
