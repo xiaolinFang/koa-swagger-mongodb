@@ -193,18 +193,6 @@ export default class customers {
       }
     ];
     const result = await dbClient.aggregate('customers', aggregate);
-
-    // const result =
-    //   params.page && params.pageSize
-    //     ? await dbClient.find(
-    //       'customers',
-    //       paramsData,
-    //       filterConditions,
-    //       params.page,
-    //       params.pageSize
-    //     )
-    //     : await dbClient.find('customers', paramsData, filterConditions);
-
     ctx.body = result;
   }
 }

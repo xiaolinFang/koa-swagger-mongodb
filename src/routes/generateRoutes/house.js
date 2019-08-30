@@ -20,7 +20,82 @@ const logTime = () => async (ctx, next) => {
   await next();
   console.timeEnd('start');
 };
-
+const formartParams = (params) => {
+  const post_params = {};
+  Object.keys(params).map((key) => {
+    switch (key) {
+      case 'price':
+      case 'area':
+      case 'station':
+      case 'partment':
+      case 'floor':
+      case 'price_total':
+        const _values = params[key].split('-');
+        post_params[key] = {
+          $gte: parseInt(_values[0].replace('>', ''))
+        };
+        if (_values[1]) {
+          post_params[key] = {
+            $gte: parseInt(_values[0]),
+            $lte: parseInt(_values[1])
+          };
+        }
+        break;
+      case 'pic':
+      case 'key':
+      case 'addPrice':
+      case 'updown':
+      case 'jumplayer':
+      case 'lease':
+        if (params[key].length) {
+          post_params[key] = {
+            $in: params[key]
+          };
+        }
+        break;
+      case 'region':
+        if (!params[key][1]) {
+          post_params[`buildinfo.${key}.0`] = params[key][0];
+        } else {
+          post_params[`buildinfo.${key}`] = params[key];
+        }
+        break;
+      case 'page':
+      case 'pageSize':
+        break;
+      case 'floorName':
+        post_params.floor = params[key];
+        break;
+      case 'keyword':
+        post_params['buildinfo.name'] = new RegExp(params[key]);
+        break;
+      case 'sort':
+        sort = params[key];
+        break;
+      case 'status':
+        post_params.$or = [
+          {
+            status: params[key]
+          },
+          {
+            'audit.status': params[key]
+          }
+        ];
+        break;
+      case 'isShop':
+        break;
+      case 'industry':
+      case 'shoptype':
+        if (parseInt(params[key])) {
+          post_params[key] = params[key];
+        }
+        break;
+      default:
+        post_params[key] = params[key];
+    }
+  });
+  return post_params;
+};
 export default class house {
   // 增
   @request('POST', '/house/add')
@@ -284,6 +359,44 @@ export default class house {
     const result = await dbClient.aggregate('house', aggregate);
     ctx.body = result;
   }
+  // 查新房
+  @request('post', '/house/searchNewHouse')
+  @summary('搜索新房房源')
+  @body({})
+  @tag
+  static async searchNewHouse(ctx) {
+    const params = ctx.request.body;
+    const paramsData = formartParams(params);
+    const page = params.page || 1;
+    const pageSize = params.pageSize || 20;
+
+    const aggregate = [
+      {
+        $match: paramsData
+      },
+      {
+        $skip: (page - 1) * pageSize
+      },
+      {
+        $limit: pageSize
+      },
+      {
+        $lookup: {
+          from: 'builds',
+          localField: 'buildinfo._id',
+          foreignField: '_id',
+          as: 'parentBuild'
+        }
+      },
+      {
+        $sort: {
+          time: -1
+        }
+      }
+    ];
+    const result = await dbClient.aggregate('house', aggregate);
+    ctx.body = result;
+  }
   // search
   @request('post', '/house/search')
   @summary('录入带看时 搜索房源api')
@@ -298,6 +411,7 @@ export default class house {
     const result = await dbClient.find('house', params, {}, 1, 20, sort);
     ctx.body = result;
   }
+
   // 查
   @request('post', '/house/find')
   @summary('house list / query by condition')
@@ -305,82 +419,10 @@ export default class house {
   @tag
   static async getAll(ctx) {
     const params = ctx.request.body;
-    const post_params = {};
-    let sort = {
+    const post_params = formartParams(params);
+    const sort = {
       time: -1
     };
-    Object.keys(params).map((key) => {
-      switch (key) {
-        case 'price':
-        case 'area':
-        case 'station':
-        case 'partment':
-        case 'floor':
-        case 'price_total':
-          const _values = params[key].split('-');
-          post_params[key] = {
-            $gte: parseInt(_values[0].replace('>', ''))
-          };
-          if (_values[1]) {
-            post_params[key] = {
-              $gte: parseInt(_values[0]),
-              $lte: parseInt(_values[1])
-            };
-          }
-          break;
-        case 'pic':
-        case 'key':
-        case 'addPrice':
-        case 'updown':
-        case 'jumplayer':
-        case 'lease':
-          if (params[key].length) {
-            post_params[key] = {
-              $in: params[key]
-            };
-          }
-          break;
-        case 'region':
-          if (!params[key][1]) {
-            post_params[`buildinfo.${key}.0`] = params[key][0];
-          } else {
-            post_params[`buildinfo.${key}`] = params[key];
-          }
-          break;
-        case 'page':
-        case 'pageSize':
-          break;
-        case 'floorName':
-          post_params.floor = params[key];
-          break;
-        case 'keyword':
-          post_params['buildinfo.name'] = new RegExp(params[key]);
-          break;
-        case 'sort':
-          sort = params[key];
-          break;
-        case 'status':
-          post_params.$or = [
-            {
-              status: params[key]
-            },
-            {
-              'audit.status': params[key]
-            }
-          ];
-          break;
-        case 'isShop':
-          break;
-        case 'industry':
-        case 'shoptype':
-          if (parseInt(params[key])) {
-            post_params[key] = params[key];
-          }
-          break;
-        default:
-          post_params[key] = params[key];
-      }
-    });
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
@@ -419,7 +461,8 @@ export default class house {
           time: item.time,
           key: item.key,
           pic: item.pic,
-          price_total: item.price_total
+          price_total: item.price_total,
+          isNew: item.isNew || false
         }))
       };
     } else {
