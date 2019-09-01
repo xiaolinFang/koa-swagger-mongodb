@@ -70,7 +70,7 @@ const formartParams = (params) => {
         post_params['buildinfo.name'] = new RegExp(params[key]);
         break;
       case 'sort':
-        sort = params[key];
+        // sort = params[key];
         break;
       case 'status':
         post_params.$or = [
@@ -96,6 +96,7 @@ const formartParams = (params) => {
   });
   return post_params;
 };
+
 export default class house {
   // 增
   @request('POST', '/house/add')
@@ -327,12 +328,12 @@ export default class house {
     // }
   }
   // 查询房源详情by id
-  @request('get', '/house/detail')
+  @request('post', '/house/detail')
   @summary('根据房源id 查询房源详情')
-  @query({})
+  @body({})
   @tag
   static async getdetail(ctx) {
-    const params = ctx.request.query;
+    const params = ctx.request.body;
     if (!params._id) {
       ctx.body = {
         code: 400,
@@ -389,7 +390,7 @@ export default class house {
         }
       },
       {
-        $sort: {
+        $sort: params.sort || {
           time: -1
         }
       }

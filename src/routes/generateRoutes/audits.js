@@ -137,59 +137,62 @@ export default class audits {
   @body(upDateJson)
   static async updateData(ctx) {
     const params = ctx.request.body;
-    const condition = {};
-    // if(params.condition !== undefined && params.jsonStr !== undefined){
-    //   try {
-    //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
-    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('audits',condition,postData)
-    //   } catch (e) {
-    //     console.log(e);
-    //     throw Error('Jsonstr is not a json string')
-    //   }
-    //   ctx.body = result
-    // }
-    if (params.json !== undefined && params.condition !== undefined) {
-      try {
-        delete params.json._id;
-        condition._id = dbClient.getObjectId(params.condition._id);
-      } catch (e) {
-        // console.log(e);
-        throw Error('jsonStr is not a json string ');
-      }
-    } else {
+
+    if (!params._id) {
       ctx.body = {
-        code: 500,
-        message: params.condition
-          ? 'jsonStr undefined'
-          : params.json
-            ? 'condition json string undefined'
-            : ' condition and jsonStr json string all undefined or {}'
+        code: 400,
+        message: '缺少必要参数'
       };
+      return;
     }
+    const condition = {
+      _id: dbClient.getObjectId(params._id)
+    };
+    delete params._id;
+    const result = await dbClient.update('audits', condition, params);
+    ctx.body = {
+      code: result.code,
+      data: result.result,
+      message: result.result.nModified >= 1 ? '修改成功' : '修改失败'
+    };
+
+    // if (params.json !== undefined && params.condition !== undefined) {
+    //   try {
+    //     delete params.json._id;
+    //     condition._id = dbClient.getObjectId(params.condition._id);
+    //   } catch (e) {
+    //     // console.log(e);
+    //     throw Error('jsonStr is not a json string ');
+    //   }
+    // } else {
+    //   ctx.body = {
+    //     code: 500,
+    //     message: params.condition ?
+    //       'jsonStr undefined' : params.json ?
+    //         'condition json string undefined' : ' condition and jsonStr json string all undefined or {}'
+    //   };
+    // }
   }
   // 查
-  @request('get', '/audits/find')
+  @request('post', '/audits/find')
   @summary('audits list / query by condition')
-  @query(queryConditions)
+  @body({})
   @tag
   static async getAll(ctx) {
-    const params = ctx.request.query;
-    let filterConditions = {};
-    let paramsData = {};
-    if (params.jsonStr && params.jsonStr !== undefined) {
-      try {
-        paramsData = JSON.parse(params.jsonStr);
-      } catch (e) {
-        throw Error('Jsonstr is not a json string');
+    const params = ctx.request.body;
+    const filterConditions = {};
+    const paramsData = {};
+    Object.keys(params).map((el) => {
+      if (el !== 'page' && el !== 'pageSize' && el !== '_id') {
+        paramsData[el] = params[el];
+      } else if (el === '_id') {
+        paramsData[el] = dbClient.getObjectId(params[el]);
       }
-    }
-    if (params.filterFileds) {
-      filterConditions = JSON.parse(params.filterFileds);
-    }
-    if (paramsData._id) {
-      paramsData._id = dbClient.getObjectId(paramsData._id);
-    }
+    });
+    const sort = {
+      time: -1
+    };
+
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
@@ -197,9 +200,17 @@ export default class audits {
           paramsData,
           filterConditions,
           params.page,
-          params.pageSize
+          params.pageSize,
+          sort
         )
-        : await dbClient.find('audits', paramsData, filterConditions);
+        : await dbClient.find(
+          'audits',
+          paramsData,
+          filterConditions,
+          null,
+          null,
+          sort
+        );
     ctx.body = result;
   }
 }

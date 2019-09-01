@@ -121,39 +121,42 @@ export default class builds {
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;
-    const condition = {};
-    const postData = {};
-    let result = {};
-    // if(params.condition !== undefined && params.jsonStr !== undefined){
-    //   try {
-    //     condition = typeof params.condition === 'string' ? JSON.parse(params.condition) : params.condition
-    //     postData = typeof params.jsonStr === 'string' ? JSON.parse(params.jsonStr) : params.jsonStr
-    //     result = await dbClient.update('builds',condition,postData)
-    //   } catch (e) {
-    //     console.log(e);
-    //     throw Error('Jsonstr is not a json string')
-    //   }
-    //   ctx.body = result
-    // }
-    if (params.json !== undefined && params.condition !== undefined) {
-      try {
-        delete params.json._id;
-        condition._id = dbClient.getObjectId(params.condition._id);
-        result = await dbClient.update('config', condition, params.json);
-      } catch (e) {
-        // console.log(e);
-        throw Error('jsonStr is not a json string ');
-      }
-    } else {
+    if (!params._id) {
       ctx.body = {
-        code: 500,
-        message: params.condition
-          ? 'jsonStr undefined'
-          : params.json
-            ? 'condition json string undefined'
-            : ' condition and jsonStr json string all undefined or {}'
+        code: 400,
+        message: '确实必要参数'
       };
+      return;
     }
+
+    const condition = {
+      _id: dbClient.getObjectId(params._id)
+    };
+    delete params._id;
+    const result = await dbClient.update('builds', condition, params);
+    ctx.body = {
+      code: result.code,
+      data: result.result,
+      message: result.result.nModified >= 1 ? '上传成功' : '上传失败'
+    };
+
+    // if (params.json !== undefined && params.condition !== undefined) {
+    //   try {
+    //     delete params.json._id;
+    //     condition._id = dbClient.getObjectId(params.condition._id);
+    //     result = await dbClient.update('config', condition, params.json);
+    //   } catch (e) {
+    //     // console.log(e);
+    //     throw Error('jsonStr is not a json string ');
+    //   }
+    // } else {
+    //   ctx.body = {
+    //     code: 500,
+    //     message: params.condition ?
+    //       'jsonStr undefined' : params.json ?
+    //         'condition json string undefined' : ' condition and jsonStr json string all undefined or {}'
+    //   };
+    // }
   }
   // search
   @request('post', '/builds/search')
@@ -205,6 +208,36 @@ export default class builds {
     result.data = result.data.reverse();
 
     // result.data.sort(-1);
+    ctx.body = result;
+  }
+  @request('post', '/builds/detail')
+  @summary('楼盘详情')
+  @body({})
+  @tag
+  static async detail(ctx) {
+    const params = ctx.request.body;
+    if (!params._id) {
+      ctx.body = {
+        code: 400,
+        message: '确实必要参数'
+      };
+      return;
+    }
+    params._id = dbClient.getObjectId(params._id);
+    const aggregate = [
+      {
+        $match: params
+      },
+      {
+        $lookup: {
+          from: 'house',
+          localField: '_id',
+          foreignField: 'buildinfo._id',
+          as: 'houses'
+        }
+      }
+    ];
+    const result = await dbClient.aggregate('builds', aggregate);
     ctx.body = result;
   }
   // 列表关联查询房源信息

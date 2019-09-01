@@ -167,7 +167,9 @@ export default class user {
           _id: user._id,
           avatar: user.avatar || '',
           time: user.time || '',
-          introduction: user.introduction
+          introduction: user.introduction,
+          roles: user.roles,
+          store: user.store || ''
         });
       }
     });
