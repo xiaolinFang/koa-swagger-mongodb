@@ -307,6 +307,7 @@ export default class house {
       _id: dbClient.getObjectId(params._id)
     };
     const json = {};
+
     Object.keys(params).map((key) => {
       if (key !== '_id' && params[key]) {
         json[key] = params[key];

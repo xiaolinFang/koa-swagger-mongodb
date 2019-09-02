@@ -118,22 +118,26 @@ export default class builds {
   @description('update a builds')
   @tag
   @middlewares([logTime()])
-  @body(upDateJson)
-  static async updateData(ctx, next) {
+  @body({})
+  static async updateData(ctx) {
     const params = ctx.request.body;
     if (!params._id) {
       ctx.body = {
         code: 400,
-        message: '确实必要参数'
+        message: '缺少必要参数'
       };
-      return;
     }
-
     const condition = {
       _id: dbClient.getObjectId(params._id)
     };
-    delete params._id;
-    const result = await dbClient.update('builds', condition, params);
+    const json = {};
+
+    Object.keys(params).map((key) => {
+      if (key !== '_id' && params[key]) {
+        json[key] = params[key];
+      }
+    });
+    const result = await dbClient.update('builds', condition, json);
     ctx.body = {
       code: result.code,
       data: result.result,
