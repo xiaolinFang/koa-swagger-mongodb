@@ -12,7 +12,8 @@ import Config from './config.js';
 const MongoClient = MongoDB.MongoClient;
 const ObjectID = MongoDB.ObjectID;
 const Client = new MongoClient(Config.dbUrl, {
-  useNewUrlParser: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
 
 class Db {

@@ -1,7 +1,7 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 // import cors from 'koa-cors';
-// import convert from 'koa-convert';
+import convert from 'koa-convert';
 // import koaBody from 'koa-body';
 import serve from 'koa-static';
 
@@ -12,11 +12,11 @@ import router from './routes/index';
 const app = new Koa();
 
 app
-  .use(bodyParser())
-  .use(serve('./public'))
-  .use(errorHandle())
-  .use(router.routes())
-  .use(router.allowedMethods());
+  .use(convert(bodyParser()))
+  .use(convert(serve('./public')))
+  .use(convert(errorHandle()))
+  .use(convert(router.routes()))
+  .use(convert(router.allowedMethods()));
 // .use(koaBody({
 //   multipart: true,
 //   formidable: {
