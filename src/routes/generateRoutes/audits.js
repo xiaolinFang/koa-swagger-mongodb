@@ -135,7 +135,7 @@ export default class audits {
   @description('update a audits')
   @tag
   @middlewares([logTime()])
-  @body(upDateJson)
+  @body({})
   static async updateData(ctx) {
     const params = ctx.request.body;
 
