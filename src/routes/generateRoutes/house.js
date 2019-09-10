@@ -98,6 +98,27 @@ const formartParams = (params) => {
 };
 
 export default class house {
+  @request('post', '/house/createNewHouse')
+  @summary('添加新房')
+  @description('新房接口')
+  @tag
+  @body({})
+  static async createNewHose(ctx) {
+    const params = ctx.request.body;
+    if (!Object.keys(params).length) {
+      ctx.body = {
+        code: 400,
+        message: ' 缺少必要参数'
+      };
+      return;
+    }
+
+    const result = await dbClient.insert('house', params);
+    ctx.body = {
+      code: result.code,
+      message: result.message
+    };
+  }
   // 增
   @request('POST', '/house/add')
   @summary('add house')
@@ -397,6 +418,7 @@ export default class house {
       }
     ];
     const result = await dbClient.aggregate('house', aggregate);
+
     ctx.body = result;
   }
   // search
