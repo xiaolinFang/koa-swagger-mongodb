@@ -291,7 +291,7 @@ export default class builds {
       },
       {
         $sort: {
-          time: 1
+          time: -1
         }
       }
     ];
