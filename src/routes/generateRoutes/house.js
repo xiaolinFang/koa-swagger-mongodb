@@ -122,6 +122,10 @@ const formartParams = (params) => {
         post_params[key] = params[key];
     }
   });
+  if (params.isShop && params.price_total) {
+    post_params.price = post_params.price_total;
+    delete post_params.price_total;
+  }
   return post_params;
 };
 
@@ -358,7 +362,7 @@ export default class house {
     const json = {};
 
     Object.keys(params).map((key) => {
-      if (key !== '_id' && params[key]) {
+      if (key !== '_id') {
         json[key] = params[key];
       }
     });
