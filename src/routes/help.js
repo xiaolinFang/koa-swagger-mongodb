@@ -4,7 +4,6 @@ import path from 'path';
 // import {base64encode} from 'nodejs-base64';
 import uuidV4 from 'uuid/v4';
 import { request, summary, tags, description } from '../../dist';
-// import uuid from 'uuid/v4';
 
 const tag = tags(['Help']);
 const mkdirsFunc = (dirname) => {
