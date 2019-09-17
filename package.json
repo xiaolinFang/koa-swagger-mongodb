@@ -27,7 +27,8 @@
     "request": "^2.88.0",
     "start": "^5.1.0",
     "superagent": "^5.0.5",
-    "superagent-charset": "^1.2.0"
+    "superagent-charset": "^1.2.0",
+    "uuid": "^3.3.3"
   },
   "nyc": {
     "include": [

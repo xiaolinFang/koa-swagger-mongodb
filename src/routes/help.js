@@ -1,8 +1,10 @@
 import formidable from 'koa-formidable';
 import fs from 'fs';
 import path from 'path';
-import { base64encode } from 'nodejs-base64';
+// import {base64encode} from 'nodejs-base64';
+import uuidV4 from 'uuid/v4';
 import { request, summary, tags, description } from '../../dist';
+// import uuid from 'uuid/v4';
 
 const tag = tags(['Help']);
 const mkdirsFunc = (dirname) => {
@@ -24,7 +26,6 @@ export default class Help {
     const form = formidable.parse(ctx.request);
     form.encoding = 'utf-8';
     form.keepExtensions = true; // 保留后缀
-
     const upload = new Promise((resolve) => {
       form((opt, { fields, files }) => {
         if (!fields.type || !fields.dir) {
@@ -39,9 +40,9 @@ export default class Help {
         mkdirsFunc(uploadDir);
 
         const filename = files.file.name;
-        const prename = filename.slice(0, filename.indexOf('.'));
+        // const prename = filename.slice(0, filename.indexOf('.'));
         const lastname = filename.slice(filename.indexOf('.'), filename.length);
-        const avatarName = `${Date.now()}_${base64encode(prename)}${lastname}`;
+        const avatarName = `${Date.now()}_${uuidV4()}${lastname}`;
 
         if (lastname.indexOf('exe') !== -1) return;
         const readStream = fs.createReadStream(files.file.path);

@@ -31,15 +31,43 @@ const formartParams = (params) => {
       case 'floor':
       case 'price_total':
         const _values = params[key].split('-');
-        post_params[key] = {
-          $gte: parseInt(_values[0].replace('>', ''))
-        };
-        if (_values[1]) {
+        if (params.isNew && (key == 'price' || key == 'area')) {
+          const maxKey = `max${key.replace(
+            key.slice(0, 1),
+            key.slice(0, 1).toUpperCase()
+          )}`;
+          const obj1 = {};
+          const obj2 = {};
+          if (_values[1]) {
+            obj1[key] = {
+              $gte: parseInt(_values[0]),
+              $lte: parseInt(_values[1])
+            };
+            obj2[maxKey] = {
+              $gte: parseInt(_values[0]),
+              $lte: parseInt(_values[1])
+            };
+          } else {
+            obj1[key] = {
+              $gte: parseInt(_values[0])
+            };
+            obj2[maxKey] = {
+              $gte: parseInt(_values[0])
+            };
+          }
+
+          post_params.$or = [obj1, obj2];
+        } else if (_values[1]) {
           post_params[key] = {
             $gte: parseInt(_values[0]),
             $lte: parseInt(_values[1])
           };
+        } else {
+          post_params[key] = {
+            $gte: parseInt(_values[0].replace('>', ''))
+          };
         }
+
         break;
       case 'pic':
       case 'key':
@@ -94,6 +122,10 @@ const formartParams = (params) => {
         post_params[key] = params[key];
     }
   });
+  if (params.isShop && params.price_total) {
+    post_params.price = post_params.price_total;
+    delete post_params.price_total;
+  }
   return post_params;
 };
 
@@ -330,7 +362,7 @@ export default class house {
     const json = {};
 
     Object.keys(params).map((key) => {
-      if (key !== '_id' && params[key]) {
+      if (key !== '_id') {
         json[key] = params[key];
       }
     });
@@ -485,6 +517,8 @@ export default class house {
           time: item.time,
           key: item.key,
           pic: item.pic,
+          maxPrice: item.maxPrice || '',
+          maxArea: item.maxArea || '',
           price_total: item.price_total,
           isNew: item.isNew || false
         }))
