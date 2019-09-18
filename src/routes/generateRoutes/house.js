@@ -170,8 +170,6 @@ export default class house {
       _id: dbClient.getObjectId(buildInfo._id)
     });
 
-    // console.log(builds, '/builds');
-
     const dbBuildsData = getBuilds.data[0];
     // 检查是否存在锁定房号
     const haslocked = builds.some((build) => {
