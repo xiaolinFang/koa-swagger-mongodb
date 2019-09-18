@@ -77,7 +77,7 @@ export default class admin {
   @summary('add admin')
   @description('add a admin')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   // @body(bodyConditions)
   static async register(ctx, next) {
     const params = ctx.request.body;
@@ -151,7 +151,7 @@ export default class admin {
   @summary('update admin')
   @description('update a admin')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;

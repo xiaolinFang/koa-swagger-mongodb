@@ -67,7 +67,7 @@ export default class userGroup {
   @summary('add userGroup')
   @description('add a userGroup')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async add(ctx) {
     const params = ctx.request.body;
@@ -121,7 +121,7 @@ export default class userGroup {
   @summary('update userGroup')
   @description('update a userGroup')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;

@@ -59,7 +59,7 @@ export default class lookat {
   @summary('add lookat')
   @description('add a lookat')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async add(ctx) {
     const params = ctx.request.body;
@@ -154,7 +154,7 @@ export default class lookat {
   @summary('update lookat')
   @description('update a lookat')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;

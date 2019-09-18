@@ -95,7 +95,7 @@ export default class Downloads {
     }
     `)
   @tag
-  // @middlewares([logTime()])
+  // //  @middlewares([logTime()])
   @body(params)
   static async getDown(ctx) {
     const params = ctx.request.body;

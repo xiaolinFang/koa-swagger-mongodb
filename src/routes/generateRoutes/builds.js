@@ -68,7 +68,7 @@ export default class builds {
   @summary('add builds')
   @description('add a builds')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async register(ctx) {
     const params = ctx.request.body;
@@ -118,7 +118,7 @@ export default class builds {
   @summary('update builds')
   @description('update a builds')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async updateData(ctx) {
     const params = ctx.request.body;

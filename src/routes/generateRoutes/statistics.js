@@ -89,7 +89,7 @@ export default class statistics {
   @summary('add statistics')
   @description('add a statistics')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(bodyConditions)
   static async add(ctx) {
     const params = ctx.request.body;
@@ -139,7 +139,7 @@ export default class statistics {
   @summary('update statistics')
   @description('update a statistics')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;

@@ -57,7 +57,7 @@ export default class follow {
   @summary('add follow')
   @description('add a follow')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async add(ctx) {
     const params = ctx.request.body;
@@ -115,7 +115,7 @@ export default class follow {
   @summary('update follow')
   @description('update a follow')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;

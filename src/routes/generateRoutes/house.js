@@ -14,12 +14,6 @@ const tag = tags([
     .toLowerCase()
     .replace('house'.charAt(0), 'house'.charAt(0).toUpperCase())
 ]);
-
-const logTime = () => async (ctx, next) => {
-  // console.time('start');
-  await next();
-  // console.timeEnd('start');
-};
 const formartParams = (params) => {
   const post_params = {};
   Object.keys(params).map((key) => {
@@ -160,7 +154,6 @@ export default class house {
   @summary('add house')
   @description('add a house')
   @tag
-  @middlewares([logTime()])
   @body({})
   static async add(ctx) {
     const params = ctx.request.body;
@@ -351,7 +344,6 @@ export default class house {
   @summary('update house')
   @description('update a house')
   @tag
-  @middlewares([logTime()])
   @body({})
   static async updateData(ctx) {
     const params = ctx.request.body;

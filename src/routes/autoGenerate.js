@@ -39,7 +39,7 @@ export default class autoGenerate {
   @summary('通过传入的name添加api Router文件')
   // @description('创建数据集合及定义字段，字段名称与显示名称将存放在collectConfig 集合中，用作后期显示，程序将自动在数据库中添加该集合，')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(collectionParams)
   static async add(ctx, next) {
     const params = ctx.request.body;
@@ -77,7 +77,7 @@ export default class autoGenerate {
   @summary('delete the collection by name')
   @description('删除集合')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(CollectName)
   static async deleteCollection(ctx) {
     const params = ctx.request.body;

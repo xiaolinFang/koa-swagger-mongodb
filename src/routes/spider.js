@@ -295,14 +295,14 @@ export default class spider {
   @request('get', '/Spider/done')
   @summary('爬取网页内容')
   @description('基于nodeJs 的网页爬虫')
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @tag
   @query({
     url: { type: 'string', require: 'true' },
     charSet: { type: 'string', require: 'true' },
     type: { type: 'string', require: true, description: '分类' }
   })
-  // @middlewares([logTime()])
+  // //  @middlewares([logTime()])
   static async done(ctx) {
     const getQuery = ctx.request.query;
     const url = getQuery.url;
@@ -327,7 +327,7 @@ export default class spider {
   }
   @request('get', '/Spider/getlist')
   @summary('获取列表，根据url 获取详细信息')
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @tag
   static async getList(ctx, next) {
     const products = await dbClient.find('product_list', {});
@@ -337,7 +337,7 @@ export default class spider {
   }
   @request('get', '/Spider/export')
   @summary('导出数据保存为Excel')
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @tag
   static async exportExcelByJson(ctx) {
     const result = await dbClient.find('product_list', {});

@@ -52,7 +52,7 @@ export default class user {
   @summary('add user')
   @description('add a user')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async register(ctx) {
     const params = ctx.request.body;
@@ -105,7 +105,7 @@ export default class user {
   @summary('update user')
   @description('update a user')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx) {
     const params = ctx.request.body;

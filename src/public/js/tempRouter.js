@@ -67,7 +67,7 @@ export default class RouteName {
   @summary('add RouteName')
   @description('add a RouteName')
   @tag
-  @middlewares([logTime()])
+  // @middlewares([logTime()])
   @body(bodyConditions)
   static async add(ctx) {
     const params = ctx.request.body;
@@ -117,7 +117,7 @@ export default class RouteName {
   @summary('update RouteName')
   @description('update a RouteName')
   @tag
-  @middlewares([logTime()])
+  // @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;

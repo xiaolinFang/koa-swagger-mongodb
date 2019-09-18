@@ -58,7 +58,7 @@ export default class audits {
   @summary('add audits')
   @description('add a audits')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async add(ctx) {
     const params = ctx.request.body;
@@ -134,7 +134,7 @@ export default class audits {
   @summary('update audits')
   @description('update a audits')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async updateData(ctx) {
     const params = ctx.request.body;

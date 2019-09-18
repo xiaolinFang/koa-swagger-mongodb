@@ -67,7 +67,7 @@ export default class roles {
   @summary('add roles')
   @description('add a roles')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(bodyConditions)
   static async add(ctx) {
     const params = ctx.request.body;
@@ -117,7 +117,7 @@ export default class roles {
   @summary('update roles')
   @description('update a roles')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body(upDateJson)
   static async updateData(ctx, next) {
     const params = ctx.request.body;

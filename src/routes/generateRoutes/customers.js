@@ -55,7 +55,7 @@ export default class customers {
   @summary('add customers')
   @description('add a customers')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   static async add(ctx) {
     const params = ctx.request.body;
     if (!Object.keys(params).length) {
@@ -104,7 +104,7 @@ export default class customers {
   @summary('update customers')
   @description('update a customers')
   @tag
-  @middlewares([logTime()])
+  //  @middlewares([logTime()])
   @body({})
   static async updateData(ctx) {
     const params = ctx.request.body;
