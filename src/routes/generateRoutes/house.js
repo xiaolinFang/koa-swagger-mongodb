@@ -16,9 +16,9 @@ const tag = tags([
 ]);
 
 const logTime = () => async (ctx, next) => {
-  console.time('start');
+  // console.time('start');
   await next();
-  console.timeEnd('start');
+  // console.timeEnd('start');
 };
 const formartParams = (params) => {
   const post_params = {};
@@ -255,10 +255,11 @@ export default class house {
           dbRoom.selected = lockedBlooean;
           dbRoom.locked = lockedBlooean;
           const updateData = {};
-          const _floorName =
-            dbBuildsData.builds[build.index].floor[build.key].name;
+          const _floorName = dbBuildsData.builds[build.index].floor
+            ? dbBuildsData.builds[build.index].floor[build.key].name
+            : '';
           params.floor =
-            parseInt(_floorName).toString !== 'NaN'
+            _floorName && parseInt(_floorName).toString !== 'NaN'
               ? parseInt(_floorName)
               : _floorName;
 
@@ -287,7 +288,7 @@ export default class house {
           const updateData = {};
           params.tag = '整层';
           params.floor =
-            parseInt(dbFloor.name).toString !== 'NaN'
+            dbFloor.name && parseInt(dbFloor.name).toString !== 'NaN'
               ? parseInt(dbFloor.name)
               : dbFloor.name;
           updateData[`builds.${build.index}.floor.${build.key}`] = dbFloor;
@@ -313,9 +314,9 @@ export default class house {
           dbBuild.inputfloor = '';
           const updateData = {};
           params.tag = '整栋';
-          const _floorName = dbBuild.floor[build.key].name;
+          const _floorName = dbBuild.floor ? dbBuild.floor[build.key].name : '';
           params.floor =
-            parseInt(_floorName).toString !== 'NaN'
+            _floorName && parseInt(_floorName).toString !== 'NaN'
               ? parseInt(_floorName)
               : _floorName;
           updateData[`builds.${build.index}`] = dbBuild;
