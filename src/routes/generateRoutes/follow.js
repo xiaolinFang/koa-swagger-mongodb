@@ -4,9 +4,7 @@ import {
   body,
   tags,
   middlewares,
-  path,
-  description,
-  query
+  description
 } from '../../../dist';
 import dbClient from '../../middleware/db';
 // .toUpperCase()

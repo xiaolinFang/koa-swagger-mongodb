@@ -82,7 +82,7 @@
     "watch:node": "nodemon --watch src --watch dist --exec npm run start:babel -L",
     "watch:ts": "tsc -w -p tsconfig.json",
     "start": "concurrently -k -p \"[{name}]\" -n \"eslint,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch:ts\" \"npm run watch:node\"",
-    "start-pro": "nodemon --watch src --delay 10  --exec npm run start:babel -L ",
+    "start-pro": "nodemon --exec npm run start:babel -L ",
     "test": "./node_modules/mocha/bin/mocha -r babel-core/register test/**/*.js --bail -t 2000000",
     "prepublish": "npm run build",
     "lint": "eslint .",
