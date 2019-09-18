@@ -114,8 +114,12 @@ const formartParams = (params) => {
         break;
       case 'industry':
       case 'shoptype':
-        if (parseInt(params[key])) {
-          post_params[key] = params[key];
+        const _indexKey =
+          parseInt(params[key]) !== 'NaN' ? parseInt(params[key]) : params[key];
+        if (_indexKey) {
+          post_params[key] = {
+            $in: [_indexKey]
+          };
         }
         break;
       default:
