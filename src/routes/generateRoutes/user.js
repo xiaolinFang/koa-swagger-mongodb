@@ -109,20 +109,29 @@ export default class user {
   @body(upDateJson)
   static async updateData(ctx) {
     const params = ctx.request.body;
-    if (!params.condition || !params.json) {
+    let condition = {};
+    const json = {};
+    if (!params._id) {
       ctx.body = {
         code: 400,
         message: '缺少必传参数'
       };
       return;
     }
+    condition = {
+      _id: dbClient.getObjectId(params._id)
+    };
+    Object.keys(params).map((key) => {
+      if (key !== '_id') {
+        json[key] = params[key];
+      }
+    });
+    const result = await dbClient.update('user', condition, json);
 
-    params.condition._id = dbClient.getObjectId(params.condition._id);
-    const result = await dbClient.update('user', params.condition, params.json);
-    if (result.result && result.result.nModified && result.result.ok) {
+    if (result.result && result.result.nModified) {
       ctx.body = {
         code: 200,
-        message: '保存成功'
+        message: '修改成功'
       };
     } else {
       ctx.body = {
