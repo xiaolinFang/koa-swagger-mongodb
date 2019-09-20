@@ -253,6 +253,7 @@ export default class builds {
   static async getAll(ctx) {
     const _params = ctx.request.body;
     const paramsData = {};
+
     const page = _params.page || 1;
     const pageSize = _params.pageSize || 10;
     Object.keys(_params).map((key) => {
@@ -295,8 +296,9 @@ export default class builds {
         }
       }
     ];
-
+    // console.log(requestCount);
     const result = await dbClient.aggregate('builds', postAggregate);
+
     const data = result.data.map((_item) => {
       if (_item.houses.length) {
         _item.houses = _item.houses.map(_house => ({
@@ -310,6 +312,7 @@ export default class builds {
     ctx.body = {
       code: result.code,
       data,
+      count: result.count,
       message: result.message
     };
   }
