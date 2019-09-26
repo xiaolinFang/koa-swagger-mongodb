@@ -242,6 +242,7 @@ export default class user {
       };
     }
   }
+
   // 根据token （id）获取用户信息
   @request('get', '/user/info')
   @summary('根据用户id 查询用户信息')
