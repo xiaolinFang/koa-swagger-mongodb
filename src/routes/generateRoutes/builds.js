@@ -86,32 +86,23 @@ export default class builds {
   @request('DELETE', '/builds/delete')
   @summary('delete builds by condition')
   @tag
-  @body(bodyConditions)
+  @body({})
   // @path({ id: { type: 'string', required: true } })
   static async deleteMany(ctx) {
     const params = ctx.request.body;
-    let paramsData = {};
-    if (params.jsonStr !== undefined) {
-      try {
-        paramsData =
-          typeof params.jsonStr === 'string'
-            ? JSON.parse(params.jsonStr)
-            : params.jsonStr;
-        if (paramsData._id) {
-          paramsData._id = dbClient.getObjectId(paramsData._id);
-        }
-        const result = await dbClient.remove('builds', paramsData);
-        ctx.body = result;
-      } catch (e) {
-        // console.log('Jsonstr is not a json string',e)
-        throw Error('Jsonstr is not a json string');
-      }
-    } else {
+    if (!params._id) {
       ctx.body = {
-        code: 500,
-        message: 'Jsonstr is undefined'
+        code: 400,
+        message: '缺少必要参数'
       };
+      return;
     }
+
+    const _postParams = {
+      _id: dbClient.getObjectId(params._id)
+    };
+    const result = await dbClient.remove('builds', _postParams);
+    ctx.body = result;
   }
   // 改
   @request('Put', '/builds/update')

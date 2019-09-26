@@ -106,7 +106,7 @@ export default class user {
   @description('update a user')
   @tag
   //  @middlewares([logTime()])
-  @body(upDateJson)
+  @body({})
   static async updateData(ctx) {
     const params = ctx.request.body;
     let condition = {};
