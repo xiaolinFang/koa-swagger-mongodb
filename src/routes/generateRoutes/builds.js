@@ -249,9 +249,15 @@ export default class builds {
     const pageSize = _params.pageSize || 10;
     Object.keys(_params).map((key) => {
       if (key !== 'page' && key !== 'pageSize') {
-        if (_params[key] && _params[key].length && key !== 'region') {
-          paramsData[key] =
-            key === 'keywrod' ? new RegExp(_params[key]) : _params[key];
+        if (
+          _params[key] &&
+          _params[key].length &&
+          key !== 'region' &&
+          key !== 'keyword'
+        ) {
+          paramsData[key] = _params[key];
+        } else if (key === 'keyword' && _params[key]) {
+          paramsData.name = new RegExp(_params[key]);
         }
         if (_params.region && _params.region.length) {
           if (_params.region[0] && !_params.region[1]) {
@@ -263,6 +269,7 @@ export default class builds {
         }
       }
     });
+
     const postAggregate = [
       {
         $skip: (page - 1) * pageSize
