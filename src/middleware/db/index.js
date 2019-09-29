@@ -50,8 +50,6 @@ class Db {
   aggregate(collectionName, json) {
     return new Promise((resolve, reject) => {
       this.connect().then(async (db) => {
-        console.log(json, '/json[0].$match');
-
         const result = await db.collection(collectionName).aggregate(json);
         const count = await db
           .collection(collectionName)
