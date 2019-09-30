@@ -272,13 +272,13 @@ export default class builds {
 
     const postAggregate = [
       {
+        $match: paramsData
+      },
+      {
         $skip: (page - 1) * pageSize
       },
       {
         $limit: pageSize
-      },
-      {
-        $match: paramsData
       },
       {
         $lookup: {

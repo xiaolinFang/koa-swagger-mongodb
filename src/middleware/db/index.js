@@ -53,7 +53,7 @@ class Db {
         const result = await db.collection(collectionName).aggregate(json);
         const count = await db
           .collection(collectionName)
-          .find(json[2].$match)
+          .find(json[0].$match)
           .count();
         result.toArray((err, docs) => {
           if (err) {
