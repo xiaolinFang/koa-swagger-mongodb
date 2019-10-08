@@ -263,4 +263,28 @@ export default class user {
       };
     }
   }
+  @request('post', '/user/findIn')
+  @summary('详情查询角色信息')
+  @tag
+  @body({})
+  static async findIn(ctx) {
+    const params = ctx.request.body;
+    if (!params.length) {
+      ctx.body = {
+        code: 400,
+        message: '缺少必要参数'
+      };
+      return;
+    }
+    const data = [];
+    params.map((item) => {
+      data.push(dbClient.getObjectId(item[Object.keys(item)[0]]));
+    });
+    const result = await dbClient.find('user', {
+      _id: {
+        $in: data
+      }
+    });
+    ctx.body = result;
+  }
 }
