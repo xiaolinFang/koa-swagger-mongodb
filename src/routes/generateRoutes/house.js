@@ -361,6 +361,7 @@ export default class house {
         json[key] = params[key];
       }
     });
+
     const result = await dbClient.update('house', condition, json);
     ctx.body = {
       data: result.result,
@@ -511,6 +512,7 @@ export default class house {
           tag: item.tag || '',
           time: item.time,
           key: item.key,
+          tranFee: item.tranFee,
           pic: item.pic,
           maxPrice: item.maxPrice || '',
           maxArea: item.maxArea || '',
