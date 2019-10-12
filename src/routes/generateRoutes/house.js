@@ -377,6 +377,35 @@ export default class house {
     //   }
     // }
   }
+  @request('get', '/house/findNoAdvHouse')
+  @summary('查找有图片，没实勘人的房源')
+  @query({})
+  @tag
+  static async findNoAdvHouse(ctx) {
+    const params = {
+      advAuthor: null
+    };
+    const result = await dbClient.find('house', params);
+
+    result.data.map((item) => {
+      const advAuthor = {};
+      Object.keys(item.author).map((key) => {
+        if (key !== '_id') advAuthor[key] = item.author[key];
+        else advAuthor.token = item.author[key];
+      });
+      console.log(advAuthor, '/advAuthor');
+      if (item.author && advAuthor) {
+        dbClient.update(
+          'house',
+          {
+            _id: dbClient.getObjectId(item._id)
+          },
+          advAuthor
+        );
+      }
+    });
+    ctx.body = result;
+  }
   // 查询房源详情by id
   @request('post', '/house/detail')
   @summary('根据房源id 查询房源详情')
