@@ -62,41 +62,18 @@ export default class audits {
   @body({})
   static async add(ctx) {
     const params = ctx.request.body;
-    if (!Object.keys(params).length) {
+    if (Object.keys(params).length) {
+      const result = await dbClient.insert('audits', params);
+      ctx.body = {
+        code: result.code,
+        data: result.data.result
+      };
+    } else {
       ctx.body = {
         code: 400,
         message: '缺少添加数据'
       };
-      return;
     }
-    // 查询是否存在相同id的数据
-    // const _checkHasDone = async () => {
-    //   const json = {
-    //     type: params.type
-    //   };
-    //   json['obj._id'] = params.obj._id;
-
-    //   const hasdone = await dbClient.find('audits', json);
-    //   console.log(hasdone, '/hasdone');
-
-    //   if (hasdone.count && hasdone.data.length) {
-    //     return true;
-    //   }
-    //   return false;
-    // };
-    // const find = await _checkHasDone();
-    // if (!find) {
-    const result = await dbClient.insert('audits', params);
-    ctx.body = {
-      code: result.code,
-      data: result.data.result
-    };
-    // } else {
-    //   ctx.body = {
-    //     code: 500,
-    //     message: 'success'
-    //   };
-    // }
   }
   // 删
   @request('DELETE', '/audits/delete')

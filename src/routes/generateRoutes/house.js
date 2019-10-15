@@ -319,7 +319,8 @@ export default class house {
       const result = await dbClient.insert('house', params);
       ctx.body = {
         code: result.code,
-        message: result.message
+        message: result.message,
+        id: result.data.ops[0]._id
       };
 
       // if (result.result)
@@ -387,21 +388,22 @@ export default class house {
     };
     const result = await dbClient.find('house', params);
 
-    result.data.map((item) => {
+    result.data.map(async (item, index) => {
       const advAuthor = {};
-      Object.keys(item.author).map((key) => {
-        if (key !== '_id') advAuthor[key] = item.author[key];
-        else advAuthor.token = item.author[key];
-      });
-      console.log(advAuthor, '/advAuthor');
-      if (item.author && advAuthor) {
-        dbClient.update(
-          'house',
-          {
+      if (item.author) {
+        Object.keys(item.author).map((key) => {
+          if (key !== '_id') advAuthor[key] = item.author[key];
+          else advAuthor.token = item.author[key];
+        });
+
+        if (Object.keys(advAuthor).length) {
+          const condition = {
             _id: dbClient.getObjectId(item._id)
-          },
-          advAuthor
-        );
+          };
+          await dbClient.update('house', condition, {
+            advAuthor
+          });
+        }
       }
     });
     ctx.body = result;

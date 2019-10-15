@@ -163,6 +163,8 @@ class Db {
       self.connect().then((db) => {
         db.collection(collectionName).insertOne(json, (err, result) => {
           if (err) {
+            console.log(err, result, json, 'err/');
+
             reject(self.foramtResult(err, 'error'));
           } else {
             resolve(self.foramtResult(result, 'success'));
