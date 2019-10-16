@@ -168,6 +168,7 @@ export default class audits {
       }
     });
     const sort = {
+      audit: 1,
       time: -1
     };
 
