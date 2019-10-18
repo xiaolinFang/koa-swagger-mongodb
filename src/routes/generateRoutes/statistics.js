@@ -75,7 +75,7 @@ export default class statistics {
       type: 2
     });
     const newHouse = await dbClient.count('house', {
-      type: 3
+      isNew: true
     });
     ctx.body = {
       customers,
