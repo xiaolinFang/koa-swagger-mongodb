@@ -191,6 +191,10 @@ export default class builds {
         // paramsData.county = params.region[1];
       }
     }
+    if (Object.keys(params).includes('isResidence')) {
+      paramsData.isResidence = params.isResidence;
+    }
+
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
