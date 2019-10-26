@@ -149,6 +149,67 @@ export default class house {
       message: result.message
     };
   }
+  @request('post', '/house/addResidence')
+  @summary('发布住宅房源')
+  @description('住宅房源')
+  @tag
+  @body({})
+  static async addresidence(ctx) {
+    const params = ctx.request.body;
+    if (!Object.keys(params).length) {
+      ctx.body = {
+        code: 400,
+        message: '缺少必填参数'
+      };
+      return;
+    }
+    const postParams = {};
+    Object.keys(params).map((el) => {
+      if (params[el] !== '') {
+        postParams[el] = params[el];
+      }
+    });
+    if (postParams['buildinfo._id']) {
+      postParams['buildinfo._id'] = dbClient.getObjectId(postParams['buildinfo._id']);
+    }
+    const { residenceBuild } = postParams;
+    const _getBuild = await dbClient.find('builds', {
+      _id: dbClient.getObjectId(residenceBuild.curBuildId)
+    });
+    let curBuild = {};
+    if (_getBuild && _getBuild.data) {
+      curBuild = _getBuild.data[0];
+    }
+    const curRoom =
+      curBuild.builds[residenceBuild.build].units[residenceBuild.unit].floor[
+        residenceBuild.floor
+      ].room[residenceBuild.room];
+    if (curRoom.selected || curRoom.locked) {
+      ctx.body = {
+        code: 500,
+        message: '该房源已被锁定'
+      };
+    } else {
+      const upRoom = {};
+      const roomKey = `builds.${residenceBuild.build}.units.${residenceBuild.unit}.floor.${residenceBuild.floor}.room.${residenceBuild.room}`;
+      upRoom[`${roomKey}.selected`] = upRoom[`${roomKey}.locked`] = true;
+      await dbClient.update(
+        'builds',
+        {
+          _id: dbClient.getObjectId(curBuild._id)
+        },
+        upRoom
+      );
+      const result = await dbClient.insert('house', postParams);
+
+      ctx.body = {
+        code: 200,
+        id: result.data.ops[0]._id
+      };
+    }
+
+    // console.log(_getBuild, '/_getBuild');
+  }
   // 增
   @request('POST', '/house/add')
   @summary('add house')
