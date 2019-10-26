@@ -601,7 +601,7 @@ export default class house {
           imgs: item.imgs,
           keyImg: !!item.keyImg,
           buildinfo: item.buildinfo,
-          tag: item.tag || '',
+          tag: item.tag || item.tags || '',
           time: item.time,
           key: item.key,
           tranFee: item.tranFee,
