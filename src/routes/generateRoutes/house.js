@@ -169,9 +169,10 @@ export default class house {
         postParams[el] = params[el];
       }
     });
-    if (postParams['buildinfo._id']) {
-      postParams['buildinfo._id'] = dbClient.getObjectId(postParams['buildinfo._id']);
-    }
+    // if (params.buildinfo._id) {
+    //   postParams['buildinfo._id'] = dbClient.getObjectId(params['buildinfo._id']);
+    // }
+
     const { residenceBuild } = postParams;
     const _getBuild = await dbClient.find('builds', {
       _id: dbClient.getObjectId(residenceBuild.curBuildId)
@@ -200,6 +201,8 @@ export default class house {
         },
         upRoom
       );
+      postParams.buildinfo._id = dbClient.getObjectId(postParams.buildinfo._id);
+
       const result = await dbClient.insert('house', postParams);
 
       ctx.body = {
