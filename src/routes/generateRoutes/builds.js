@@ -306,7 +306,8 @@ export default class builds {
         _item.houses = _item.houses.map(_house => ({
           _id: _house._id,
           area: _house.area,
-          imgs: _house.imgs
+          imgs: _house.imgs,
+          status: _house.status
         }));
       }
       return _item;
