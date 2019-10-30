@@ -61,7 +61,6 @@ const formartParams = (params) => {
             $gte: parseInt(_values[0].replace('>', ''))
           };
         }
-
         break;
       case 'pic':
       case 'key':
@@ -77,7 +76,9 @@ const formartParams = (params) => {
       case 'updown':
       case 'jumplayer':
       case 'lease':
-        if (params[key].length) {
+        if (params.type === 4 && key === 'lease') {
+          post_params[key] = params[key];
+        } else if (params[key].length) {
           post_params[key] = {
             $in: params[key]
           };
