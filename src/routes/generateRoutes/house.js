@@ -65,6 +65,14 @@ const formartParams = (params) => {
         break;
       case 'pic':
       case 'key':
+        if (params[key].length && params.type !== 4) {
+          post_params[key] = {
+            $in: params[key]
+          };
+        } else {
+          post_params[key] = params[key];
+        }
+        break;
       case 'addPrice':
       case 'updown':
       case 'jumplayer':
@@ -116,6 +124,14 @@ const formartParams = (params) => {
           };
         }
         break;
+      case 'bedroom':
+        post_params[key] =
+          params[key] >= 5
+            ? {
+              $gte: 5
+            }
+            : params[key];
+        break;
       default:
         post_params[key] = params[key];
     }
@@ -124,6 +140,7 @@ const formartParams = (params) => {
     post_params.price = post_params.price_total;
     delete post_params.price_total;
   }
+
   return post_params;
 };
 
@@ -515,6 +532,7 @@ export default class house {
     const paramsData = formartParams(params);
     const page = params.page || 1;
     const pageSize = params.pageSize || 20;
+    console.log(params.sort, '/ params.sort');
 
     const aggregate = [
       {
@@ -567,9 +585,10 @@ export default class house {
   static async getAll(ctx) {
     const params = ctx.request.body;
     const post_params = formartParams(params);
-    const sort = {
+    const sort = params.sort || {
       time: -1
     };
+
     const result =
       params.page && params.pageSize
         ? await dbClient.find(
