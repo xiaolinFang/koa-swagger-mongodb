@@ -639,10 +639,9 @@ export default class house {
       ctx.body = result;
     }
   }
-  @request('post', '/paseFloatAreaAndPriceTotal')
+  @request('get', '/paseFloatAreaAndPriceTotal')
   @tag
   @summary('修复面积、单价、总价修改后为字符串类型错误')
-  @body({})
   static async FixAreaPriceToNumber(ctx) {
     const list = await dbClient.find('house', {
       isNew: null
