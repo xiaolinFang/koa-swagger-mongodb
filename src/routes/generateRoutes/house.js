@@ -589,6 +589,7 @@ export default class house {
     const sort = params.sort || {
       time: -1
     };
+    if (params.sort) post_params.isNew = null;
 
     const result =
       params.page && params.pageSize
