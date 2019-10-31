@@ -639,4 +639,38 @@ export default class house {
       ctx.body = result;
     }
   }
+  @request('post', '/paseFloatAreaAndPriceTotal')
+  @tag
+  @summary('修复面积、单价、总价修改后为字符串类型错误')
+  @body({})
+  static async FixAreaPriceToNumber(ctx) {
+    const list = await dbClient.find('house', {
+      isNew: null
+    });
+    list.data.map((item) => {
+      const {
+        area, price, price_total, _id
+      } = item;
+      const updataField = {};
+      if (typeof area === 'string') {
+        updataField.area = parseFloat(area);
+      }
+      if (typeof price === 'string') {
+        updataField.price = parseFloat(price);
+      }
+      if (typeof price_total === 'string') {
+        updataField.price_total = parseFloat(price_total);
+      }
+      if (Object.keys(updataField).length) {
+        dbClient.update(
+          'house',
+          {
+            _id: dbClient.getObjectId(_id)
+          },
+          updataField
+        );
+      }
+    });
+    ctx.body = list;
+  }
 }
