@@ -238,7 +238,16 @@ export default class builds {
       }
     ];
     const result = await dbClient.aggregate('builds', aggregate);
-    ctx.body = result;
+    const data = result.data.map((item) => {
+      item.houses = item.houses.filter(house => house.status === 1);
+      return item;
+    });
+    ctx.body = {
+      code: result.code,
+      message: result.message,
+      count: result.count,
+      data
+    };
   }
   // 列表关联查询房源信息
   @request('post', '/builds/list')
