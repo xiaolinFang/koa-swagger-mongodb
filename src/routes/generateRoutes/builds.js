@@ -303,12 +303,22 @@ export default class builds {
 
     const data = result.data.map((_item) => {
       if (_item.houses.length) {
-        _item.houses = _item.houses.map(_house => ({
-          _id: _house._id,
-          area: _house.area,
-          imgs: _house.imgs,
-          status: _house.status
-        }));
+        _item.houses = _item.houses.filter((_house) => {
+          if (_house.status === 1) {
+            return {
+              _id: _house._id,
+              area: _house.area,
+              imgs: _house.imgs,
+              status: _house.status
+            };
+          }
+        });
+        // _item.houses = _item.houses.map(_house => ({
+        //   _id: _house._id,
+        //   area: _house.area,
+        //   imgs: _house.imgs,
+        //   status: _house.status
+        // }));
       }
       return _item;
     });
